@@ -30,7 +30,5 @@ public class Player : MonoBehaviour
         float moveZ = Input.GetAxisRaw("Vertical");
 
         transform.position += new Vector3(moveX, 0f, moveZ) * Time.deltaTime * moveSpeed;
-        animator.SetInteger("RunZ", (int)moveZ);
-        animator.SetInteger("RunX", (int)moveX);
     }
 }
