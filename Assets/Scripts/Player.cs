@@ -5,19 +5,24 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     private CharacterController controller;
+    private Camera cam;
     private Animator animator;
     private float moveHorizontal; //x축 좌표 담당
     private float moveVertical; //z축 좌표 담당
 
-    [Header("캐릭터 무빙 설정")]
-    [SerializeField] private float moveSpeed;
-    [SerializeField] private float turnSpeed;
-    private float gravity = 9.81f;
+    [Header("캐릭터 움직임 설정")]
+    [SerializeField] private float moveSpeed; //이동 속도
+    [SerializeField] private float jumpPower; //캐릭터 점프력
+    private float turnSpeed; //회전 속도
 
-    [Header("카메라 설정")]
-    private Camera cam;
-    [SerializeField] private float camX;
-    [SerializeField] private float camZ;
+    [Header("중력 설정")]
+    private float gravity = -9.81f; //중력 값
+    [SerializeField] private Vector3 velocity; //중력을 적용하기 위해 만든 벡터 변수
+    [SerializeField] private Transform groundChecker; //땅을 체크하기 위한 Transform 변수
+    [SerializeField] private float groundDistance; //땅 판정을 결정할 거리 변수
+    [SerializeField] private LayerMask groundMask; //땅 레이어 확인 변수
+    [SerializeField] private bool isGround = true; //발이 땅에 닿아있는 지 확인
+    [SerializeField] private bool isJump = false; //점프 했는지 확인
 
     private void Awake()
     {
@@ -33,6 +38,7 @@ public class Player : MonoBehaviour
     private void Update()
     {
         Moving();
+        Gravity();
     }
 
     /// <summary>
@@ -45,12 +51,6 @@ public class Player : MonoBehaviour
 
         Vector3 direction = new Vector3(moveHorizontal, 0f, moveVertical).normalized;
         //.normalized를 넣어서 대각선 이동이 빨리 가지 않기 위해 막아놓음
-
-        //float angle = Mathf.Atan2(direction.z, direction.x) * Mathf.Deg2Rad;
-        //transform.rotation = Quaternion.Euler(0f, angle, 0f);
-        //controller.Move(direction * moveSpeed * Time.deltaTime);
-
-        //controller.Move(rotTurn * inputMove.normalized * Time.deltaTime * moveSpeed);
 
         if (direction.magnitude >= 0.1f) //방향키를 입력할 때 적용할 수 있게 적용
         //이 조건을 넣지 않으면 캐릭터가 안움직일 때 y회전 값이 0으로 고정
@@ -70,13 +70,16 @@ public class Player : MonoBehaviour
         float targetAngle = Mathf.Atan2(_direction.x, _direction.z) * Mathf.Rad2Deg + cam.transform.rotation.eulerAngles.y;
         //※ Mathf.Deg2Rad를 넣으면 작동 안됨 ※
         //cam.transform.rotation.eulerAngles.y를 넣어 카메라의 y회전값을 더해 카메라 방향을 정방향으로 설정
-
+        
         //현 캐릭터 방향에서 입력한 방향으로 회전할 때 부드럽게 움직일 수 있도록 설정
         float smoothTurnY = Mathf.SmoothDampAngle(transform.rotation.eulerAngles.y, targetAngle, ref turnSpeed, 0.1f);
 
         transform.rotation = Quaternion.Euler(0f, smoothTurnY, 0f); //설정한 값 적용시키기
 
-        controller.Move(_direction * moveSpeed * Time.deltaTime);
+        //Euler로 방향을 정하여 Vector3.forward를 곱하여 정방향을 결정
+        Vector3 targetDirection = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+
+        controller.Move(targetDirection * moveSpeed * Time.deltaTime);
 
         #region 회전 수정 전 코드
         //transform.eulerAngles = new Vector3(0f, angle, 0f);
@@ -115,10 +118,34 @@ public class Player : MonoBehaviour
     }
 
     /// <summary>
-    /// 중력 적용
+    /// 점프와 중력을 만들기 위해 Velocity.y를 이용한 함수
     /// </summary>
-    private void IsGravity()
+    private void Gravity()
     {
-        
+        //지정한 빈 오브젝트의 위치를 이용하여 땅과의 거리를 측정하여 사용
+        isGround = Physics.CheckSphere(groundChecker.position, groundDistance, groundMask);
+        //isGround = Physics.Raycast(groundChecker.position + new Vector3(0, 1f, 0),
+                                   //Vector3.down, 1f, groundMask);
+
+        if (isGround && velocity.y < 0f) //땅에 닿아있을 때의 중력
+        {
+            velocity.y = -2f;
+        }
+
+
+        if (Input.GetKeyDown(KeyCode.Space) && isGround)
+        {
+            velocity.y = Mathf.Sqrt(jumpPower * -2f * gravity);
+        }
+
+        velocity.y += gravity * Time.deltaTime; //땅에 떨어져있을 때의 중력
+
+        controller.Move(velocity * Time.deltaTime);
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawLine(groundChecker.position + new Vector3(0, -1f, 0f), Vector3.down);
     }
 }
