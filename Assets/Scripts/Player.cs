@@ -12,7 +12,8 @@ public class Player : MonoBehaviour
 
     [Header("캐릭터 움직임 설정")]
     [SerializeField] private float moveSpeed; //이동 속도
-    [SerializeField] private float jumpPower; //캐릭터 점프력
+    [SerializeField] private float jumpForce; //캐릭터 점프력
+    [SerializeField] private float floatCheckGround; //캐릭터 점프력
     private float turnSpeed; //회전 속도
 
     [Header("중력 설정")]
@@ -38,6 +39,7 @@ public class Player : MonoBehaviour
     private void Update()
     {
         Moving();
+        Jump();
         Gravity();
     }
 
@@ -58,7 +60,7 @@ public class Player : MonoBehaviour
             DirectionMovingOfCamera(direction);
         }
 
-        AnimMoving(direction); //움직임에 따라 애니메이션 적용
+        SetAnimation(direction); //움직임에 따라 애니메이션 적용
     }
 
     /// <summary>
@@ -76,7 +78,8 @@ public class Player : MonoBehaviour
 
         transform.rotation = Quaternion.Euler(0f, smoothTurnY, 0f); //설정한 값 적용시키기
 
-        //Euler로 방향을 정하여 Vector3.forward를 곱하여 정방향을 결정
+        //Euler로 방향을 설정하여 Vector3.forward를 곱하여 정방향을 결정
+        //아래 코드를 안적으면 캐릭터 오브젝트만 회전하되 이동은 z축을 정방향으로 고정되어 한 방향으로만 감
         Vector3 targetDirection = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
 
         controller.Move(targetDirection * moveSpeed * Time.deltaTime);
@@ -102,18 +105,39 @@ public class Player : MonoBehaviour
     /// <summary>
     /// 캐릭터의 움직임을 체크하여 애니메이션 적용
     /// </summary>
-    private void AnimMoving(Vector3 _moveCheck)
+    private void SetAnimation(Vector3 _moveCheck)
     {
         //Vector3 moveCheck = _direction; //위 입력값을 벡터로 넣기
 
-        if (_moveCheck.magnitude >= 0.1f) //움직임이 있으면 위 벡터의 길이 값이 0보다 크기 때문에 0.1보다 높게 측정
+        if (_moveCheck.magnitude >= 0.1f && isGround) //움직임이 있으면 위 벡터의 길이 값이 0보다 크기 때문에 0.1보다 높게 측정
         {
             animator.SetBool("Moving", true);
         }
 
-        else if (_moveCheck.magnitude == 0f)
+        else if (_moveCheck.magnitude == 0f && isGround)
         {
             animator.SetBool("Moving", false);
+        }
+
+        if (!isGround)
+        {
+            animator.SetBool("Jump", true);
+        }
+
+        else
+        {
+            animator.SetBool("Jump", false);
+        }
+    }
+
+    /// <summary>
+    /// 캐릭터 점프 담당
+    /// </summary>
+    private void Jump()
+    {
+        if (Input.GetKeyDown(KeyCode.Space) && isGround) //땅 위에 서있는 상태에서 점프키를 누르면
+        {
+            isJump = true; //점프 트리거 활성화+
         }
     }
 
@@ -123,29 +147,28 @@ public class Player : MonoBehaviour
     private void Gravity()
     {
         //지정한 빈 오브젝트의 위치를 이용하여 땅과의 거리를 측정하여 사용
+        //isGround = Physics.Raycast(groundChecker.position, transform.position - transform.up, controller.height * 0.5f + floatCheckGround, groundMask);
         isGround = Physics.CheckSphere(groundChecker.position, groundDistance, groundMask);
-        //isGround = Physics.Raycast(groundChecker.position + new Vector3(0, 1f, 0),
-                                   //Vector3.down, 1f, groundMask);
 
-        if (isGround && velocity.y < 0f) //땅에 닿아있을 때의 중력
+        if (isGround && velocity.y < 0f) //땅에 닿아있고 y속도가 0이하일 때의 중력
         {
             velocity.y = -2f;
         }
 
-
-        if (Input.GetKeyDown(KeyCode.Space) && isGround)
+        if (isJump) //점프 트리거가 활성화가 되면
         {
-            velocity.y = Mathf.Sqrt(jumpPower * -2f * gravity);
+            isJump = false; //점프 트리거를 바로 끔
+            velocity.y = jumpForce; //점프
         }
 
         velocity.y += gravity * Time.deltaTime; //땅에 떨어져있을 때의 중력
-
         controller.Move(velocity * Time.deltaTime);
     }
 
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawLine(groundChecker.position + new Vector3(0, -1f, 0f), Vector3.down);
+        Gizmos.DrawLine(transform.position, transform.position - transform.up);
+        //Gizmos.DrawWireSphere(groundChecker.position, 0.55f);
     }
 }
