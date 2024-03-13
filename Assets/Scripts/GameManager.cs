@@ -33,4 +33,16 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+
 }
+#region 게임 빌드 화면 비율 셋팅 예시
+    //private void SetReSolution()
+    //{
+    //    float targetRatio = 9f / 16f; //fhd
+    //    float ratio = (float)Screen.width / (float)Screen.height;
+    //    float scaleHeight = ratio / targetRatio; //비율
+    //    float fixedWidth = (float)Screen.width / scaleHeight;
+        
+    //    Screen.SetResolution((int)fixedWidth, Screen.height, true);
+    //}
+#endregion
