@@ -5,29 +5,28 @@ using UnityEngine;
 
 public class PlayerAttackAnimation : MonoBehaviour
 {
-    [Header("애니메이터 설정")]
-    [SerializeField] private string attack01; //설정할 애니메이터 파라미터
+    [Header("파라미터 설정")]
+    [SerializeField] private string attacking; //설정할 애니메이터 파라미터
+    [SerializeField] private string nextAttack; //다음 공격
+    [SerializeField] private string attack01; //첫 번째 공격 애니메이션
+    [SerializeField] private string attack02; //두 번째 공격 애니메이션
 
     private Animator animator;
-    private PlayerMove playerMove;
-    [SerializeField, Tooltip("공격중일 때 True")] private bool isAttacking = false;
-    [SerializeField, Tooltip("땅에있을 때 True")] private bool isGround = false;
+    //private PlayerMove playerMove; //플레이어 움직임 스크립트
+    private PlayerAttack playerAttack; //플레이어의 공격 스크립트
+    //[SerializeField, Tooltip("공격중일 때 True")] private bool isAttacking = false;
+    //[SerializeField, Tooltip("땅에있을 때 True")] private bool isGround = false;
 
     private void Awake()
     {
         animator = GetComponent<Animator>();
-    }
-
-    private void Start()
-    {
-        playerMove = GetComponent<PlayerMove>();
+        playerAttack = GetComponent<PlayerAttack>();
+        //playerMove = GetComponent<PlayerMove>();
     }
 
     private void Update()
     {
         Attack();
-        SetIsAttacking();
-        GetIsGround();
     }
 
     /// <summary>
@@ -35,32 +34,16 @@ public class PlayerAttackAnimation : MonoBehaviour
     /// </summary>
     private void Attack()
     {
-        if (Input.GetKeyDown(KeyCode.Mouse0) && !isAttacking && isGround)
+        //처음에 쓴 조건문 : Input.GetKeyDown(KeyCode.Mouse0) && !isAttacking && isGround
+        if (playerAttack.P_GetIsAttack())
         {
-            animator.SetBool(attack01, true); //공격 애니메이션 사용
+            animator.SetBool(attacking, true); //공격 애니메이션 사용
         }
-    }
 
-    /// <summary>
-    /// 플레이어 공격에 따라 PlayerMove스크립트의 IsAttacking 변수 설정
-    /// </summary>
-    private void SetIsAttacking()
-    {
-        playerMove.P_SetIsAttacking(isAttacking);
-    }
-
-    private void GetIsGround()
-    {
-        isGround = playerMove.P_GetIsGround();
-    }
-
-    /// <summary>
-    /// 애니메이션에 넣을 함수
-    /// isAttack을 true로 바꿔 공격중이라는 것을 확인시키게 함
-    /// </summary>
-    private void A_IsAttack()
-    {
-        isAttacking = true;
+        if (playerAttack.P_GetNextAttack())
+        {
+            animator.SetBool(nextAttack, true);
+        }
     }
 
     /// <summary>
@@ -69,7 +52,32 @@ public class PlayerAttackAnimation : MonoBehaviour
     /// </summary>
     private void A_UnIsAttack()
     {
-        isAttacking = false;
-        animator.SetBool(attack01, isAttacking);
+        playerAttack.P_SetIsAttack(false); //PlayerAttack 스크립트의 isAttack값을 false로 설정
+        playerAttack.P_SetIsNext(false); //공격이 끊겼으므로 다음 공격 트리거 끄기
+        animator.SetBool(attacking, false); //공격 애니메이션 끄기
     }
+
+    /// <summary>
+    /// 다음 공격을 사용하기 위해 애니메이션 기준으로 트리거 활성화
+    /// </summary>
+    private void A_IsNext()
+    {
+        playerAttack.P_SetIsNext(true);
+    }
+
+    /// <summary>
+    /// 다음 공격을 사용하지 못하게 끄기
+    /// </summary>
+    private void A_UnIsNext()
+    {
+        playerAttack.P_SetIsNext(false);
+    }
+    /// <summary>
+    /// 애니메이션에 넣을 함수
+    /// isAttack을 true로 바꿔 공격중이라는 것을 확인시키게 함
+    /// </summary>
+    //private void A_IsAttack()
+    //{
+    //    isAttacking = true;
+    //}
 }
