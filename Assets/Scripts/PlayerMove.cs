@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PlayerMove : MonoBehaviour
 {
@@ -9,14 +10,20 @@ public class PlayerMove : MonoBehaviour
     private Animator animator;
     private float moveHorizontal; //x축 좌표 담당
     private float moveVertical; //z축 좌표 담당
+    private float targetAngle; //입력값으로 인한 각도
+    private Vector3 targetDirection; //카메라 위치에 따른 플레이어의 정방향
 
     [Header("캐릭터 움직임 설정")]
     [SerializeField] private float moveSpeed; //이동 속도
+    [SerializeField] private float dashSpeed; //대쉬 속도
+    [SerializeField] private float setDashTime; //설정할 대쉬 시간
+    [SerializeField] private float curDashTime; //현재 대쉬 시간
     [SerializeField] private float jumpForce; //캐릭터 점프력
     [SerializeField] private float floatCheckGround; //캐릭터 점프력
     private float turnSpeed; //회전 속도
     [SerializeField] private bool isAttacking = false; //공격중일 때 이동을 막기 위한 트리거
-
+    [SerializeField] private bool isDash = false; //대쉬 기능 사용
+    
     [Header("중력 설정")]
     private float gravity = -9.81f; //중력 값
     [SerializeField] private Vector3 velocity; //중력을 적용하기 위해 만든 벡터 변수
@@ -39,9 +46,43 @@ public class PlayerMove : MonoBehaviour
 
     private void Update()
     {
+        InputKey();
         Moving();
+        Dash();
         Jump();
         Gravity();
+    }
+
+    /// <summary>
+    /// 키 코드 관리
+    /// </summary>
+    private void InputKey()
+    {
+        if (Input.GetKeyDown(KeyCode.Mouse1) && !isDash) //마우스 오른쪽 버튼으로 사용하고 중복 입력 방지함
+        {
+            curDashTime = setDashTime; //타이머 설정
+            isDash = true; //대쉬 사용
+            animator.SetTrigger("DashStart");
+        }
+    }
+
+    /// <summary>
+    /// 대쉬 사용
+    /// </summary>
+    private void Dash()
+    {
+        if (!isDash) { return; }
+
+        transform.rotation = Quaternion.Euler(0f, targetAngle, 0f); //캐릭터 회전
+        controller.Move(targetDirection.normalized * dashSpeed * Time.deltaTime); //입력한 방향으로 이동
+
+        //타이머 설정
+        curDashTime -= Time.deltaTime;
+        
+        if (curDashTime <= 0f)
+        {
+            isDash = false; //타이머가 끝나면서 값 변경
+        }
     }
 
     /// <summary>
@@ -49,7 +90,7 @@ public class PlayerMove : MonoBehaviour
     /// </summary>
     private void Moving()
     {
-        if (isAttacking) { return; } //공격중일 때 이동을 막아놓음
+        if (isAttacking || isDash) { return; } //공격 중 혹은 대쉬 중일 때 이동을 막아놓음
         
         moveHorizontal = Input.GetAxisRaw("Horizontal");
         moveVertical = Input.GetAxisRaw("Vertical");
@@ -72,7 +113,7 @@ public class PlayerMove : MonoBehaviour
     private void DirectionMovingOfCamera(Vector3 _direction)
     {
         //내가 바라볼 방향을 각도로 전환
-        float targetAngle = Mathf.Atan2(_direction.x, _direction.z) * Mathf.Rad2Deg + cam.transform.rotation.eulerAngles.y;
+        targetAngle = Mathf.Atan2(_direction.x, _direction.z) * Mathf.Rad2Deg + cam.transform.rotation.eulerAngles.y;
         //※ Mathf.Deg2Rad를 넣으면 작동 안됨 ※
         //cam.transform.rotation.eulerAngles.y를 넣어 카메라의 y회전값을 더해 카메라 방향을 정방향으로 설정
         
@@ -83,7 +124,7 @@ public class PlayerMove : MonoBehaviour
 
         //Euler로 방향을 설정하여 Vector3.forward를 곱하여 정방향을 결정
         //아래 코드를 안적으면 캐릭터 오브젝트만 회전하되 이동은 z축을 정방향으로 고정되어 한 방향으로만 감
-        Vector3 targetDirection = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+        targetDirection = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
 
         controller.Move(targetDirection * moveSpeed * Time.deltaTime);
 
@@ -184,11 +225,20 @@ public class PlayerMove : MonoBehaviour
     }
 
     /// <summary>
-    /// 땅 트리거를 전달하는 public함수
+    /// isGround 값을 전달
     /// </summary>
     /// <returns></returns>
     public bool P_GetIsGround()
     {
         return isGround;
+    }
+
+    /// <summary>
+    /// isDash 값을 전달
+    /// </summary>
+    /// <returns></returns>
+    public bool P_GetIsDash()
+    {
+        return isDash;
     }
 }
