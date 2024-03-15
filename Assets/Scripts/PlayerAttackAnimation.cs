@@ -8,11 +8,11 @@ public class PlayerAttackAnimation : MonoBehaviour
     [Header("파라미터 설정")]
     [SerializeField] private string attacking; //설정할 애니메이터 파라미터
     [SerializeField] private string nextAttack; //다음 공격
-    [SerializeField] private string dash; //대쉬 파라미터
     [SerializeField] private string attack01; //첫 번째 공격 애니메이션
+    [SerializeField] private string attack02; //두 번째 공격 애니메이션
 
     private Animator animator;
-    private PlayerMove playerMove; //플레이어 움직임 스크립트
+    //private PlayerMove playerMove; //플레이어 움직임 스크립트
     private PlayerAttack playerAttack; //플레이어의 공격 스크립트
     //[SerializeField, Tooltip("공격중일 때 True")] private bool isAttacking = false;
     //[SerializeField, Tooltip("땅에있을 때 True")] private bool isGround = false;
@@ -21,19 +21,18 @@ public class PlayerAttackAnimation : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         playerAttack = GetComponent<PlayerAttack>();
-        playerMove = GetComponent<PlayerMove>();
+        //playerMove = GetComponent<PlayerMove>();
     }
 
     private void Update()
     {
-        AttackAnimation();
-        DashAnimation();
+        Attack();
     }
 
     /// <summary>
     /// 플레이어가 공격하는 기능
     /// </summary>
-    private void AttackAnimation()
+    private void Attack()
     {
         //처음에 쓴 조건문 : Input.GetKeyDown(KeyCode.Mouse0) && !isAttacking && isGround
         if (playerAttack.P_GetIsAttack())
@@ -41,29 +40,9 @@ public class PlayerAttackAnimation : MonoBehaviour
             animator.SetBool(attacking, true); //공격 애니메이션 사용
         }
 
-        if (playerAttack.P_GetNextAttack()) //다음 공격 트리거가 실행되면
+        if (playerAttack.P_GetNextAttack())
         {
-            animator.SetBool(nextAttack, true); //파라미터 키기
-        }
-
-        else //트리거가 종료되면
-        {
-            animator.SetBool(nextAttack, false); //파라미터 끄기
-            
-        } //=> nextAttack은 다음 공격을 실행하게 하는 bool형 값이므로 제 때 꺼야 자동 연속 공격이 막아짐
-    }
-
-    /// <summary>
-    /// 대쉬 애니메이션 관리
-    /// PlayerMove의 isDash 값이 true면 실행 false면 종료
-    /// </summary>
-    private void DashAnimation()
-    {
-        bool isDash = playerMove.P_GetIsDash();
-        bool curAnimState = animator.GetBool(dash);
-        if ((isDash == true && curAnimState == false) || (isDash == false && curAnimState == true))
-        {
-            animator.SetBool(dash, isDash);
+            animator.SetBool(nextAttack, true);
         }
     }
 
@@ -92,7 +71,6 @@ public class PlayerAttackAnimation : MonoBehaviour
     private void A_UnIsNext()
     {
         playerAttack.P_SetIsNext(false);
-        //animator.SetBool(nextAttack, false);
     }
     /// <summary>
     /// 애니메이션에 넣을 함수
