@@ -15,8 +15,8 @@ public class PlayerAttack : MonoBehaviour
 
     [SerializeField] private bool isAttack; //플레이어의 공격을 담당
     [SerializeField] private bool isGround; //플레이어가 땅에 있는 지 유무
-    [SerializeField] private bool isNext; //다음 공격 가능하게 하는 트리거
-    [SerializeField] private bool nextAttack; //연속 공격 사용
+    [SerializeField,Tooltip("연속 공격이 가능한 타이밍일 때 True")] private bool isNext; //다음 공격 가능하게 하는 트리거
+    [SerializeField,Tooltip("바로 연속 공격을 실행할 때 True")] private bool nextAttack; //연속 공격 사용
 
     private void Awake()
     {
@@ -58,7 +58,8 @@ public class PlayerAttack : MonoBehaviour
 
             else if (isAttack && isNext) //공격 중 다음 공격이 가능해졌을 때
             {
-                nextAttack = true;
+                nextAttack = true; //연속 공격 실행
+                Invoke("I_UnNextAttack", 0.1f); //0.1초뒤에 끄게하여 원치 않는 연속 공격을 미리 막아줌
             }
         }
     }
@@ -123,6 +124,14 @@ public class PlayerAttack : MonoBehaviour
     private void GetIsGround()
     {
         isGround = playerMove.P_GetIsGround();
+    }
+
+    /// <summary>
+    /// Invoke로 bool값을 조금 늦춰서 변경시키기
+    /// </summary>
+    private void I_UnNextAttack()
+    {
+        nextAttack = false;
     }
 
     /// <summary>
