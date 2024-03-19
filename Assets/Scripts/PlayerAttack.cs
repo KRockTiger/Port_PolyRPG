@@ -13,6 +13,8 @@ public class PlayerAttack : MonoBehaviour
     [Header("플레이어 공격 스텟")]
     [SerializeField] private float attackRange; //공격범위
 
+    [SerializeField] private int attackCycle = 0; //연속 공격 횟수로 공격할 때마다 1씩 증가하며 공격이 끝나면 0으로 변경
+    [SerializeField] private GameObject attackTrigger; //공격 판정을 넣을 트리거
     [SerializeField] private bool isAttack; //플레이어의 공격을 담당
     [SerializeField] private bool isGround; //플레이어가 땅에 있는 지 유무
     [SerializeField,Tooltip("연속 공격이 가능한 타이밍일 때 True")] private bool isNext; //다음 공격 가능하게 하는 트리거
@@ -21,11 +23,12 @@ public class PlayerAttack : MonoBehaviour
     private void Awake()
     {
         playerMove = GetComponent<PlayerMove>();
+        attackTrigger.SetActive(false);
     }
 
     private void Update()
     {
-        Attack();
+        InputAttack();
         SetIsAttack();
         GetIsGround();
         SearchEnemy();
@@ -34,7 +37,7 @@ public class PlayerAttack : MonoBehaviour
     /// <summary>
     /// 플레이어의 공격을 담당하는 함수
     /// </summary>
-    private void Attack()
+    private void InputAttack()
     {
         //플레이어가 땅에 밝아있는 상태에서 공격 중인 상태가 아닐 때 공격 ==> 나중에 연속 공격을 넣게 되면 추후 수정
         if (Input.GetKeyDown(KeyCode.Mouse0) && isGround)
@@ -62,6 +65,17 @@ public class PlayerAttack : MonoBehaviour
                 Invoke("I_UnNextAttack", 0.1f); //0.1초뒤에 끄게하여 원치 않는 연속 공격을 미리 막아줌
             }
         }
+    }
+
+    /// <summary>
+    /// 공격 판정을 넣을 트리거를 실행시켜주는 함수
+    /// -애니메이션에 코루틴을 넣어서 실행
+    /// </summary>
+    private IEnumerator AC_AttackTrigger()
+    {
+        attackTrigger.SetActive(true); //공격 트리거 활성화하여 공격하기
+        yield return new WaitForSeconds(0.1f);
+        attackTrigger.SetActive(false); //공격 트리거 비활성화하여 공격막기
     }
 
     /// <summary>
@@ -160,6 +174,22 @@ public class PlayerAttack : MonoBehaviour
     }
 
     /// <summary>
+    /// 공격 횟수 증가
+    /// </summary>
+    public void P_SetAttackCycle()
+    {
+        attackCycle += 1;
+    }
+
+    /// <summary>
+    /// 공격 횟수 초기화
+    /// </summary>
+    public void P_ReSetAttackCycle()
+    {
+        attackCycle = 0;
+    }
+
+    /// <summary>
     /// PlayerAttack의 isAttack 값을 가져오기
     /// </summary>
     /// <returns></returns>
@@ -168,8 +198,18 @@ public class PlayerAttack : MonoBehaviour
         return isAttack;
     }
 
+    public bool P_GetIsNext()
+    {
+        return isNext;
+    }
+
     public bool P_GetNextAttack()
     {
         return nextAttack;
+    }
+
+    public int P_GetAttackCycle()
+    {
+        return attackCycle;
     }
 }

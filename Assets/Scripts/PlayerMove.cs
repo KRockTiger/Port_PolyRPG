@@ -70,6 +70,7 @@ public class PlayerMove : MonoBehaviour
             isDash = true; //대쉬 사용
             animator.SetTrigger("DashStart");
             playerAttack.P_SetIsAttack(false); //공격 끄기
+            playerAttack.P_ReSetAttackCycle(); //횟수 초기화
         }
     }
 
@@ -213,7 +214,8 @@ public class PlayerMove : MonoBehaviour
 
             if (isAttacking || isDash) //공격중 혹은 대쉬중일 때
             {
-                playerAttack.P_SetIsAttack(false);
+                playerAttack.P_SetIsAttack(false); //공격 중지
+                playerAttack.P_ReSetAttackCycle(); //횟수 초기화
                 isAttacking = false; //공격 캔슬
                 isDash = false; //대쉬 캔슬
             }
