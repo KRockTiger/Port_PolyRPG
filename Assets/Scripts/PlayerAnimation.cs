@@ -120,7 +120,7 @@ public class PlayerAnimation : MonoBehaviour
     private IEnumerator C_NotEndAttack()
     {
         notEndAttack = true;
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.3f);
         notEndAttack = false;
     }
 
