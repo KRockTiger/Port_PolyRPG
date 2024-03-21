@@ -5,6 +5,8 @@ using UnityEngine.Rendering;
 
 public class GameManager : MonoBehaviour
 {
+    [SerializeField] private GameObject inventory;
+
     private void Start()
     {
         Cursor.lockState = CursorLockMode.Locked; //게임 시작 시 마우스 커서 잠금

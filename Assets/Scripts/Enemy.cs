@@ -14,7 +14,8 @@ public class Enemy : MonoBehaviour
     [SerializeField] private bool isChase; //추적 상태
     [SerializeField] private bool isGround; //추적 상태
     [SerializeField] private bool isHitting; //피격 상태 ==> 피격 중일 경우 약간의 그로기 시간을 가짐
-    [SerializeField] private bool isAttacking; //전투 상태
+    [SerializeField] private bool isAttacking; //전투 중 상태
+    [SerializeField] private bool attackAble; //전투 가능 상태
     [SerializeField] private bool isMoving; //이동 상태
     [SerializeField] private Transform groundChecker;
     [SerializeField] private float groundDistance;
@@ -27,6 +28,10 @@ public class Enemy : MonoBehaviour
     [SerializeField] private float startSearchRange; //탐색 범위
     [SerializeField] private float endSearchRange; //탐색 중단 범위
     [SerializeField] private float attackRange; //공격 범위
+    [SerializeField] private float setAttackTimer; //설정할 공격 타이머
+    [SerializeField] private float curAttackTimer; //현재 공격 타이머
+    [SerializeField] private bool goAttack; //공격 발사 가능 상태
+    [SerializeField] private bool isTimer; //타이머 조절용
 
     private void OnTriggerEnter(Collider other)
     {
@@ -42,6 +47,11 @@ public class Enemy : MonoBehaviour
         enemyAnimation = GetComponent<EnemyAnimation>();
         controller = GetComponent<CharacterController>();
         curHP = setHP; //현재 체력 설정
+    }
+
+    private void Start()
+    {
+        goAttack = true;
     }
 
     private void Update()
@@ -69,7 +79,7 @@ public class Enemy : MonoBehaviour
     /// </summary>
     private void SearchPlayer()
     {
-        if (isHitting) { return; } //피격중일 경우 리턴
+        if (isHitting || isAttacking) { return; } //피격중 혹은 공격중일 경우 리턴
 
         GameObject player = GameObject.FindGameObjectWithTag("Player"); //플레이어 탐색
 
@@ -82,18 +92,20 @@ public class Enemy : MonoBehaviour
 
             if (distance <= attackRange) //공격 범위보다 가깝다면
             {
-                isAttacking = true; //전투 상태 전환
+                attackAble = true; //전투 상태 전환
             }
 
             else //공격 범위보다 멀면
             {
-                isAttacking = false; //비전투 상태 전환
+                attackAble = false; //비전투 상태 전환
             }
         }
 
         else if (distance >= endSearchRange) //몬스터의 탐색 중단 범위 보다 거리가 멀면
         {
             isChase = false; //추적 상태 끄기
+            attackAble = false; //비전투 상태 전환,
+                                //몬스터의 공격 중 범위에서 벗어났을 때 유지되는 현상을 고침
         }
 
         ChasePlayer(player);
@@ -121,7 +133,7 @@ public class Enemy : MonoBehaviour
         //오브젝트의 정방향 설정
         Vector3 targetDirection = Quaternion.Euler(0f, angle.eulerAngles.y, 0f) * Vector3.forward;
 
-        if (isAttacking) { return; } //전투 상태일 경우 멈춤
+        if (attackAble) { return; } //전투 상태일 경우 멈춤
 
         //오브젝트 이동
         controller.Move(targetDirection * moveSpeed * Time.deltaTime);
@@ -129,12 +141,28 @@ public class Enemy : MonoBehaviour
 
     /// <summary>
     /// 전투 상태로 전환
+    /// 일정 간격으로 평타를 때리는 일반적인 공격 코드
     /// </summary>
     private void Attacking()
     {
-        if (!isAttacking) { return; }
+        //if (isTimer) //타이머가 작동 가능한 상태일경우
+        //{
+        //    curAttackTimer -= Time.deltaTime; //공격 쿨타임은 계속 줄어듬
+        //}
 
+        //if (curAttackTimer <= 0f)
+        //{
+        //    goAttack = true; //공격 발사 상태로 전환
+        //    isTimer = false; //타이머 중지
+        //}
 
+        if (!attackAble) { return; }
+
+        if (goAttack)
+        {
+            StartCoroutine(C_SetAttackTimer());
+            enemyAnimation.P_GoAttack();
+        }
     }
 
     /// <summary>
@@ -143,6 +171,7 @@ public class Enemy : MonoBehaviour
     private void Hit()
     {
         Debug.Log("맞았습니다!");
+        isAttacking = false; //공격 캔슬 판정을 받아야 함
         StartCoroutine(C_SetIsHitting());
     }
 
@@ -157,13 +186,30 @@ public class Enemy : MonoBehaviour
         isHitting = false;
     }
 
-    public bool P_GetIsChase()
+    private IEnumerator C_SetAttackTimer()
     {
-        return isChase;
+        goAttack = false; //공격 발사 불가능 상태
+        yield return new WaitForSeconds(setAttackTimer);
+        goAttack = true; //공격 발사 가능 상태
+    }
+
+    public void P_SetIsAttacking(bool _isAttacking)
+    {
+        isAttacking = _isAttacking;
     }
 
     public bool P_GetIsAttacking()
     {
         return isAttacking;
+    }
+
+    public bool P_GetIsChase()
+    {
+        return isChase;
+    }
+
+    public bool P_GetAttackAble()
+    {
+        return attackAble;
     }
 }

@@ -10,6 +10,7 @@ public class EnemyAnimation : MonoBehaviour
     [SerializeField] private string hit;
     [SerializeField] private string hitting;
     [SerializeField] private string moving;
+    [SerializeField] private string attack;
 
     private void Awake()
     {
@@ -27,7 +28,7 @@ public class EnemyAnimation : MonoBehaviour
     /// </summary>
     private void MovingAnimation()
     {
-        if (enemy.P_GetIsChase() && !enemy.P_GetIsAttacking())
+        if (enemy.P_GetIsChase() && !enemy.P_GetAttackAble())
         { 
             animator.SetBool(moving, true);
         }
@@ -54,8 +55,30 @@ public class EnemyAnimation : MonoBehaviour
         animator.SetBool(hitting, false);
     }
 
+    /// <summary>
+    /// 공격 중인 상태로 만들기
+    /// </summary>
+    private void A_IsAttacking()
+    {
+        enemy.P_SetIsAttacking(true);
+    }
+
+    /// <summary>
+    /// 공격 중이 아닌 상태로 만들기
+    /// </summary>
+    private void A_UnIsAttacking()
+    {
+        enemy.P_SetIsAttacking(false);
+    }
+
     public void P_SetTrigger_Hit()
     {
-        animator.SetTrigger(hit);
+        //animator.SetTrigger(hit);
+        animator.Play(hit);
+    }
+
+    public void P_GoAttack()
+    {
+        animator.SetTrigger(attack);
     }
 }

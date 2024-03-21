@@ -92,7 +92,11 @@ public class PlayerAnimation : MonoBehaviour
     /// </summary>
     private void A_IsNext()
     {
-        playerAttack.P_SetIsNext(true);
+        //03.21) 공격 중 캔슬 했을 때 절묘한 타이밍에 현 코드가 작동되어 연속 공격이 빠르게 일어나는 버그가 있음
+        if (playerAttack.P_GetIsAttack()) //따라서 캐릭터가 공격 중일 상태에만 코드가 작동되게 변경
+        {
+            playerAttack.P_SetIsNext(true);
+        }
     }
 
     /// <summary>

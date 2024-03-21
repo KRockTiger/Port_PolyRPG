@@ -69,6 +69,9 @@ public class PlayerMove : MonoBehaviour
             curDashTime = setDashTime; //타이머 설정
             isDash = true; //대쉬 사용
             animator.SetTrigger("DashStart");
+            playerAttack.P_SetIsNext(false);
+            //=> 연속 공격 중 대쉬 혹은 점프로 캔슬 할 경우 isNext가 true로 계속 남게 되어 다음 연속 공격할 때
+            //=> 비정상적인 속도로 연속 공격이 실행됨
             playerAttack.P_SetIsAttack(false); //공격 끄기
             playerAttack.P_ReSetAttackCycle(); //횟수 초기화
         }
@@ -218,6 +221,9 @@ public class PlayerMove : MonoBehaviour
                 playerAttack.P_ReSetAttackCycle(); //횟수 초기화
                 isAttacking = false; //공격 캔슬
                 isDash = false; //대쉬 캔슬
+                playerAttack.P_SetIsNext(false);
+                //=> 연속 공격 중 대쉬 혹은 점프로 캔슬 할 경우 isNext가 true로 계속 남게 되어 다음 연속 공격할 때
+                //=> 비정상적인 속도로 연속 공격이 실행됨
             }
         }
     }
