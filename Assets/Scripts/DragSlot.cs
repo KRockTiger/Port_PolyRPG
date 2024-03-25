@@ -33,4 +33,18 @@ public class DragSlot : MonoBehaviour
     {
         item = _item; //아이템 정보 받기
     }
+
+    public void P_ReSetDragItem()
+    {
+        item = null;
+    }
+
+    /// <summary>
+    /// 아이템 정보 가져오기
+    /// </summary>
+    /// <returns></returns>
+    public Item P_GetItem()
+    {
+        return item;
+    }
 }

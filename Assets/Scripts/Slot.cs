@@ -33,17 +33,20 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     {
         //드래그를 시작할 때 드래그 슬롯에 아이템 정보를 넘겨야 함
         dragSlot.P_SetDragItem(item);
-
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        
+        //드래그 슬롯에 아이템이 존재할 경우 마우스 중심으로 이동
+        if (dragSlot.P_GetItem() != null)
+        {
+            dragSlot.transform.position = eventData.position;
+        }
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        
+        dragSlot.P_ReSetDragItem();
     }
 
     private void Update()
@@ -51,6 +54,9 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
         CheckItem();
     }
 
+    /// <summary>
+    /// 슬롯 내 아이템 확인
+    /// </summary>
     private void CheckItem()
     {
         if (item != null) //슬롯에 아이템이 존재할 경우
@@ -74,5 +80,4 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     {
         return checkImage;
     }
-
 }
