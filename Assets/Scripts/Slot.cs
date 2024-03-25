@@ -4,11 +4,18 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
+    private DragSlot dragSlot;
+
     [SerializeField] private Item item; //슬롯에 들어갈 아이템
     [SerializeField] private Image itemImage; //아이템 이미지
     [SerializeField] private GameObject checkImage; //슬롯 이미지, 슬롯 위 커서의 유무에 따라 결정
+
+    private void Start()
+    {
+        dragSlot = DragSlot.Instance;
+    }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
@@ -20,6 +27,23 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         //마우스를 슬롯 밖으로 꺼내면 슬롯 이미지 비활성화
         checkImage.SetActive(false);
+    }
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        //드래그를 시작할 때 드래그 슬롯에 아이템 정보를 넘겨야 함
+        dragSlot.P_SetDragItem(item);
+
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        
     }
 
     private void Update()
@@ -50,4 +74,5 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         return checkImage;
     }
+
 }

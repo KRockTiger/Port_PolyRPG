@@ -61395,6 +61395,17 @@ SkinnedMeshRenderer:
     m_Center: {x: 27.84043, y: 1.5383472, z: 0.4586897}
     m_Extent: {x: 24.60797, y: 21.625061, z: 8.440887}
   m_DirtyAABB: 0
+--- !u!114 &1776952150 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: -5924461073088502502, guid: b7b827681147b1340be3ef1741b1e08c, type: 3}
+  m_PrefabInstance: {fileID: 1717135336}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd3a6abc89969c843b4bdb124798dc5e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1780521315
 GameObject:
   m_ObjectHideFlags: 0
@@ -74964,21 +74975,6 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 43647641934342548, guid: 6dfdb203528207642a9a93cda851ea15, type: 2}
---- !u!114 &1215522086250824049
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4721016906311386059}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1a5db2295f28965488b6f93f99b33a82, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  item: {fileID: 0}
-  itemImage: {fileID: 5985821847235183771}
-  checkImage: {fileID: 8446857794122395829}
 --- !u!114 &1376908287988250879
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -75165,7 +75161,7 @@ GameObject:
   - component: {fileID: 6762827160061247534}
   - component: {fileID: 1724665959662239760}
   - component: {fileID: 1376908287988250879}
-  - component: {fileID: 1215522086250824049}
+  - component: {fileID: 6762827160061247535}
   m_Layer: 5
   m_Name: DragSlot
   m_TagString: Untagged
@@ -75307,6 +75303,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Slot
       objectReference: {fileID: 0}
+    - target: {fileID: 5698342407293328200, guid: 38001da599505c442a0d2753f4c80f9f, type: 3}
+      propertyPath: item
+      value: 
+      objectReference: {fileID: 1776952150}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -75379,6 +75379,20 @@ RectTransform:
   m_AnchoredPosition: {x: -118, y: -463}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &6762827160061247535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4721016906311386059}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ded996c4e63aa44429384ca86d2803ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  item: {fileID: 0}
+  itemSprite: {fileID: 0}
 --- !u!222 &7504069021899002969
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -78369,7 +78383,7 @@ Animator:
   m_GameObject: {fileID: 7605309991031809362}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 038320a534bd8b444b43734860d1a211, type: 3}
-  m_Controller: {fileID: 9100000, guid: 8c73d328be286f94fad660e5812dad20, type: 2}
+  m_Controller: {fileID: 9100000, guid: 9736ed3b255277e4da6b9e825991c66a, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -81205,7 +81219,7 @@ GameObject:
   - component: {fileID: 7556428275107012954}
   - component: {fileID: 7605309991031809363}
   - component: {fileID: 7605309991031809368}
-  - component: {fileID: 7605309991031809365}
+  - component: {fileID: 7605309991031809369}
   - component: {fileID: 7605309991031809366}
   - component: {fileID: 7605309991031809367}
   m_Layer: 0
@@ -81241,22 +81255,6 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0.8, z: 0}
---- !u!114 &7605309991031809365
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7605309991031809362}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2d75543d54b2f2048acaaccb69d1b959, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  attacking: Attacking
-  nextAttack: NextAttack
-  dash: Dash
-  attack01: Attack01
 --- !u!114 &7605309991031809366
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -81301,7 +81299,7 @@ MonoBehaviour:
   groundDistance: 0.3
   groundMask:
     serializedVersion: 2
-    m_Bits: 8
+    m_Bits: 0
   isGround: 1
   isJump: 0
 --- !u!114 &7605309991031809368
@@ -81322,6 +81320,22 @@ MonoBehaviour:
   setDashCoolTime: 0
   curDashCoolTime: 0
   dashCount: 0
+--- !u!114 &7605309991031809369
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7605309991031809362}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdf8ad70bc5d0fe4994362762f6c2015, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attacking: Attacking
+  nextAttack: NextAttack
+  dash: Dash
+  attack01: Attack01
 --- !u!1 &7605353154893899212
 GameObject:
   m_ObjectHideFlags: 0
