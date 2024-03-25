@@ -32,21 +32,30 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     public void OnBeginDrag(PointerEventData eventData)
     {
         //드래그를 시작할 때 드래그 슬롯에 아이템 정보를 넘겨야 함
-        dragSlot.P_SetDragItem(item);
+        if (item != null) //슬롯에 아이템이 있을 때만 실행
+        {
+            dragSlot.gameObject.SetActive(true); //드래그 슬롯 활성화
+            dragSlot.P_SetDragItem(item); //드래그 슬롯에 아이템 넣기
+            Color setAlpha = new Color(1, 1, 1, 0.5f); //반투명 설정
+            itemImage.color = setAlpha; //컬러 입히기
+        }
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        //드래그 슬롯에 아이템이 존재할 경우 마우스 중심으로 이동
+        //드래그 슬롯에 아이템이 존재할 때만 적용
         if (dragSlot.P_GetItem() != null)
         {
-            dragSlot.transform.position = eventData.position;
+            dragSlot.transform.position = eventData.position; //드래그 하는 동안 마우스에 따라 움직임
         }
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        dragSlot.P_ReSetDragItem();
+        dragSlot.P_ReSetDragItem(); //아이템 지우기
+        dragSlot.gameObject.SetActive(false); //드래그 슬롯 비활성화
+        Color setAlpha = new Color(1, 1, 1, 1); //기본 알파값 설정
+        itemImage.color = setAlpha; //컬러 입히기
     }
 
     private void Update()
@@ -56,6 +65,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
 
     /// <summary>
     /// 슬롯 내 아이템 확인
+    /// -추후 Update로 상시 확인이 아닌 아이템을 넣거나 빼는 순간에만 사용할 수 있도록 수정 필요
     /// </summary>
     private void CheckItem()
     {

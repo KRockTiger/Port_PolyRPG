@@ -6,11 +6,12 @@ using UnityEngine;
 public class InventoryManager : MonoBehaviour
 {
     [SerializeField] private GameObject inventory;
+    [SerializeField] private GameObject itemSlots;
     [SerializeField] private Slot[] slots;
 
     private void Start()
     {
-        slots = GetComponentsInChildren<Slot>();
+        slots = itemSlots.GetComponentsInChildren<Slot>();
     }
 
     private void Update()
@@ -20,7 +21,7 @@ public class InventoryManager : MonoBehaviour
 
     private void CheckSlots()
     {
-        if (inventory.activeSelf == false) //인벤토리 오브젝트가 비활성화 상태일 때
+        if (Input.GetKeyDown(KeyCode.B) && inventory.activeSelf == true) //인벤토리 오브젝트가 비활성화 상태일 때
         {
             int count = slots.Length; //슬롯 개수 확인
 
