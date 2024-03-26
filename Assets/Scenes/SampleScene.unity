@@ -14207,6 +14207,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Slot (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 5698342407293328200, guid: 38001da599505c442a0d2753f4c80f9f, type: 3}
+      propertyPath: item
+      value: 
+      objectReference: {fileID: 7068476706324051911, guid: 1343bdbab44908d4db9fdc7fca0bead4, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
