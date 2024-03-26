@@ -13,6 +13,8 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     [SerializeField] private Image itemImage; //아이템 이미지
     [SerializeField] private GameObject checkImage; //슬롯 이미지, 슬롯 위 커서의 유무에 따라 결정
 
+    [SerializeField] private bool isDragging; //드래그 중인 상태일 경우 true
+
     private void Start()
     {
         dragSlot = DragSlot.Instance;
@@ -35,6 +37,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
         //드래그를 시작할 때 드래그 슬롯에 아이템 정보를 넘겨야 함
         if (item != null) //슬롯에 아이템이 있을 때만 실행
         {
+            isDragging = true;
             dragSlot.gameObject.SetActive(true); //드래그 슬롯 활성화
             dragSlot.P_SetDragItem(item); //드래그 슬롯에 아이템 넣기
             Color setAlpha = new Color(1, 1, 1, 0.5f); //반투명 설정
@@ -53,16 +56,37 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        dragSlot.P_ReSetDragItem(); //아이템 지우기
-        dragSlot.gameObject.SetActive(false); //드래그 슬롯 비활성화
+        if (!isDragging) { return; }
+        //dragSlot.P_ReSetDragItem(); //아이템 지우기
+        //dragSlot.gameObject.SetActive(false); //드래그 슬롯 비활성화
         Color setAlpha = new Color(1, 1, 1, 1); //기본 알파값 설정
         itemImage.color = setAlpha; //컬러 입히기
+        isDragging = false;
+
+        ///디버그로 코드 순서를 확인해본 결과
+        ///OnDrop -> OnEndDrag 순으로 코드가 진행되는 것을 확인할 수 있다.
+        ///따라서 OnDrop에서 드래그 슬롯과 드랍한 슬롯의 아이템을 교체 후
+        ///드래그 슬롯의 아이템 유무로 드랍한 슬롯에 아이템이 있었는지 확인이 가능했기 때문에
+        ///아이템을 옮기거나 교환이 가능할 수 있었다.
+        
+        //만약 드래그 슬롯에 아이템이 있는 경우
+        //=> 드롭한 슬롯에 아이템이 존재한 경우
+        if (dragSlot.P_GetItem() != null)
+        {
+            item = dragSlot.P_GetItem(); //현 슬롯에 아이템을 넣기
+            dragSlot.P_ReSetDragItem(); //아이템 지우기
+            dragSlot.gameObject.SetActive(false); //드래그 슬롯 비활성화
+        }
+
+        else //아이템이 없는 경우
+        {
+            item = null; //아이템 지우기
+            dragSlot.gameObject.SetActive(false); //드래그 슬롯 비활성화
+        }
     }
 
     /// <summary>
-    /// 엔드 드래그는 자신이 드래그한 오브젝트의 판정으로 발생하고
-    /// 온드랍은 마우스가 올려져 있는 오브젝트를 기준으로 마우스 클릭이 때지면 발생한다.
-    /// 즉 서로 다른 오브젝트에서 코드가 출력된다.
+    /// 현 스크립트를 가진 오브젝트 위에 마우스를 땔 때
     /// </summary>
     /// <param name="eventData"></param>
     public void OnDrop(PointerEventData eventData)
@@ -100,14 +124,6 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     }
 
     /// <summary>
-    /// 슬롯에 아이템 추가
-    /// </summary>
-    private void GetSlotItem(Item _item)
-    {
-        item = _item;
-    }
-
-    /// <summary>
     /// 드래그로 아이템 자리 교체
     /// A 슬롯 : 드래그 한 슬롯
     /// B 슬롯 : 드롭할 슬롯
@@ -118,6 +134,52 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
         item = dragSlot.P_GetItem(); //B슬롯에 드래그한 아이템을 저장
         dragSlot.P_ReSetDragItem(); //드래그 슬롯에 있는 아이템 삭제
 
+        if (tempItem != null) //드롭한 슬롯에 아이템이 있으면
+        {
+            dragSlot.P_SetDragItem(tempItem); //임의로 저장된 아이템을 드래그 슬롯에 저장
+        }
+    }
+
+    /// <summary>
+    /// 슬롯에 아이템 추가
+    /// 03.26) 외부에서 아이템을 획득하는 코드를 사용하기 때문에 public으로 교체
+    /// </summary>
+    public void P_AddItem(Item _item)
+    {
+        item = _item;
+    }
+
+    /// <summary>
+    /// InventoryManager 스크립트 전용 코드
+    /// 만약 드래그 중 인벤토리가 꺼지게 되면 드래그 슬롯에 아이템이 남겨진 채로 남겨져있음
+    /// 따라서 만약 꺼지게 될 경우 드래그 전 원래 상태로 되돌리기 위해 사용
+    /// </summary>
+    public void P_ReSetSlotItem()
+    {
+        if (isDragging)
+        {
+            Color setAlpha = new Color(1, 1, 1, 1); //기본 알파값 설정
+            itemImage.color = setAlpha; //컬러 입히기
+            isDragging = false;
+        }
+    }
+
+    /// <summary>
+    /// 아이템 정보 가져오기
+    /// </summary>
+    /// <returns></returns>
+    public Item P_GetItem()
+    {
+        return item;
+    }
+
+    /// <summary>
+    /// 드래그 정보 가져오기
+    /// </summary>
+    /// <returns></returns>
+    public bool P_GetIsDragging()
+    {
+        return isDragging;
     }
 
     /// <summary>

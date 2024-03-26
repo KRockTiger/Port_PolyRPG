@@ -10,7 +10,7 @@ using UnityEngine.EventSystems;
 public class DragSlot : MonoBehaviour
 {
     public static DragSlot Instance; //싱글톤을 사용해서 인벤토리 내의 아이템을 넘길 수 있게 해줌
-    private Slot slot;
+    //private Slot dragSlot; //드래그 슬롯 스크립트에 슬롯 스크립트를 연결해보기 위해 만듦
 
     [SerializeField] private Item item;
     [SerializeField] private Image itemSprite;
