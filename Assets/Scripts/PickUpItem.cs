@@ -8,8 +8,10 @@ public class PickUpItem : MonoBehaviour
     [SerializeField] private float pickUpRange; //아이템을 획득할 수 있는 거리
     [SerializeField] private float shortDistance; //제일 가까운 아이템의 거리
     [SerializeField] private KeyCode pickUpKeyCode; //획득 키
+    [SerializeField] private string pickUpText; //획득 텍스트
+    [SerializeField] private GameObject objPickUpText; //획득 텍스트 오브젝트
 
-    private Transform targetItem;
+    [SerializeField] private Transform targetItem;
 
     private void Update()
     {
@@ -56,6 +58,17 @@ public class PickUpItem : MonoBehaviour
 
     private void GetItemUI()
     {
-        
+        if (targetItem != null)
+        {
+            if (shortDistance <= pickUpRange) //제일 가까운 아이템이 픽업 가능 영역안에 있을 경우
+            {
+                objPickUpText.SetActive(true); //아이템 텍스트 오브젝트 활성화
+            }
+
+            else
+            {
+                objPickUpText.SetActive(false);
+            }
+        }
     }
 }
