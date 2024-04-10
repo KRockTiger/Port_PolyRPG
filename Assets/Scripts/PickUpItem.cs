@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class PickUpItem : MonoBehaviour
 {
+    [SerializeField] private InventoryManager inventory;
+
     [SerializeField] private float pickUpRange; //아이템을 획득할 수 있는 거리
     [SerializeField] private float shortDistance; //제일 가까운 아이템의 거리
     [SerializeField] private KeyCode pickUpKeyCode; //획득 키
@@ -12,6 +14,11 @@ public class PickUpItem : MonoBehaviour
     [SerializeField] private GameObject objPickUpText; //획득 텍스트 오브젝트
 
     [SerializeField] private Transform targetItem;
+
+    private void Start()
+    {
+        inventory = InventoryManager.Instance;
+    }
 
     private void Update()
     {
@@ -63,12 +70,33 @@ public class PickUpItem : MonoBehaviour
             if (shortDistance <= pickUpRange) //제일 가까운 아이템이 픽업 가능 영역안에 있을 경우
             {
                 objPickUpText.SetActive(true); //아이템 텍스트 오브젝트 활성화
+
+                if (Input.GetKeyDown(pickUpKeyCode))
+                {
+                    InputGetItem(targetItem.GetComponent<Item>());
+                    //=> 아이템 태그가 있는 오브젝트는 Item 컴포넌트가 붙어 있으므로 컴포넌트에 있는 정보를 가져온다.
+                }
             }
 
-            else
+            else //아이템 획득 영역보다 멀리 있을 경우
             {
-                objPickUpText.SetActive(false);
+                objPickUpText.SetActive(false); //텍스트 오브젝트 비활성화
             }
         }
+
+        else //주변에 아이템이 없으면
+        {
+            objPickUpText.SetActive(false); //텍스트 오브젝트 비활성화
+        }
+    }
+
+    /// <summary>
+    /// 아이템 획득 키
+    /// </summary>
+    private void InputGetItem(Item _item)
+    {
+        inventory.P_InputGetItem(_item);
+        //Destroy(_item.gameObject);
+        //targetItem = null; //타겟 비우기
     }
 }

@@ -5,13 +5,28 @@ using UnityEngine;
 
 public class InventoryManager : MonoBehaviour
 {
-    private DragSlot dragSlot;
+    public static InventoryManager Instance;
+
+    [SerializeField] private DragSlot dragSlot;
 
     [SerializeField] private GameObject inventory;
     [SerializeField] private GameObject itemSlots;
     [SerializeField] private Slot[] slots;
 
     [SerializeField] private Item addItem; //치트로 추가할 임의의 아이템으로 추후 삭제 예정
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     private void Start()
     {
@@ -22,8 +37,6 @@ public class InventoryManager : MonoBehaviour
     private void Update()
     {
         CheckSlots();
-
-        InputGetItem(); //치트용 함수로 추후 삭제
     }
 
     private void CheckSlots()
@@ -42,6 +55,11 @@ public class InventoryManager : MonoBehaviour
         //        }
         //    }
         //}
+
+        if (dragSlot == null)
+        {
+            dragSlot = DragSlot.Instance;
+        }
 
         if (Input.GetKeyDown(KeyCode.B) && inventory.activeSelf == false)
         {
@@ -73,17 +91,30 @@ public class InventoryManager : MonoBehaviour
     /// 키를 입력하여 임의의 아이템을 인벤토리에 저장
     /// -치트용 코드이므로 아이템 획득이 잘 작동되면 추후 삭제 예정
     /// </summary>
-    private void InputGetItem()
+    public void P_InputGetItem(Item _item)
     {
-        if (Input.GetKeyDown(KeyCode.F))
+        //if (Input.GetKeyDown(KeyCode.F))
+        //{
+        //    int count = slots.Length;
+        //    for (int iNum = 0; iNum < count; iNum++)
+        //    {
+        //        if (slots[iNum].P_GetItem() == null)
+        //        {
+        //            slots[iNum].P_AddItem(addItem);
+        //        }
+        //    }
+        //}
+
+        int count = slots.Length;
+
+        for (int iNum = 0;iNum < count; iNum++)
         {
-            int count = slots.Length;
-            for (int iNum = 0; iNum < count; iNum++)
+            if (slots[iNum].P_GetItem() == null)
             {
-                if (slots[iNum].P_GetItem() == null)
-                {
-                    slots[iNum].P_AddItem(addItem);
-                }
+                Item scItem = _item;
+                slots[iNum].P_AddItem(scItem);
+                //Destroy(_item.gameObject);
+                return; //아이템이 추가되면 리턴하여 멈추게 하기
             }
         }
     }

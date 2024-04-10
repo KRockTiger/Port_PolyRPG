@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
 {
-    private DragSlot dragSlot;
+    [SerializeField] private DragSlot dragSlot;
 
     [SerializeField] private Item item; //슬롯에 들어갈 아이템
     [SerializeField] private Image itemImage; //아이템 이미지
