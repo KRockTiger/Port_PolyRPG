@@ -5,10 +5,10 @@ using UnityEngine.UI;
 
 public class Item : MonoBehaviour
 {
-    [SerializeField] private Sprite itemSprite;
+    [SerializeField] private int idx;
 
-    public Sprite P_GetItemSprite()
+    public int P_GetItemIdx()
     {
-        return itemSprite;
+        return idx;
     }
 }

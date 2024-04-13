@@ -13,7 +13,8 @@ public class DragSlot : MonoBehaviour
     //private Slot dragSlot; //드래그 슬롯 스크립트에 슬롯 스크립트를 연결해보기 위해 만듦
 
     [SerializeField] private Item item;
-    [SerializeField] private Image itemSprite;
+    [SerializeField] private int idx = -1; //아이템 번호 => -1은 빈 슬롯을 의미함
+    [SerializeField] private Image itemImage;
 
     private void Awake()
     {
@@ -38,24 +39,29 @@ public class DragSlot : MonoBehaviour
     /// <summary>
     /// 드래그를 시작할 때 드래그 슬롯에 아이템 정보를 넘긴다.
     /// </summary>
-    public void P_SetDragItem(Item _item)
+    public void P_SetDragItem(int _idx, Sprite _itemImage)
     {
-        item = _item; //아이템 정보 받기
-        itemSprite.sprite = _item.P_GetItemSprite(); //아이템 이미지를 저장
+        idx = _idx; //아이템 정보 받기
+        itemImage.sprite = _itemImage; //아이템 이미지를 저장
     }
 
     public void P_ReSetDragItem()
     {
-        item = null;
-        itemSprite.sprite = null;
+        idx = -1;
+        itemImage.sprite = null;
     }
 
     /// <summary>
     /// 아이템 정보 가져오기
     /// </summary>
     /// <returns></returns>
-    public Item P_GetItem()
+    public int P_GetItemIdx()
     {
-        return item;
+        return idx;
+    }
+
+    public Sprite P_GetItemSprite()
+    {
+        return itemImage.sprite;
     }
 }

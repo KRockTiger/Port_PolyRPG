@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
+using Newtonsoft.Json;
 
 public class InventoryManager : MonoBehaviour
 {
@@ -15,6 +15,15 @@ public class InventoryManager : MonoBehaviour
 
     [SerializeField] private Item addItem; //치트로 추가할 임의의 아이템으로 추후 삭제 예정
 
+    public enum jsonType
+    {
+        Item,
+    }
+    [SerializeField] List<TextAsset> listJsons; //json파일 등록
+    [SerializeField] List<ItemJson> listJsonItem; //저장된 아이템의 json파일(확인용)
+
+    [SerializeField] List<Sprite> listSpr;
+
     private void Awake()
     {
         if (Instance == null)
@@ -26,12 +35,20 @@ public class InventoryManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+        string json = listJsons[(int)jsonType.Item].text;
+        listJsonItem = JsonConvert.DeserializeObject<List<ItemJson>>(json);
+
+        //Sprite spr = P_GetSprite(1);
     }
 
     private void Start()
     {
         slots = itemSlots.GetComponentsInChildren<Slot>();
         dragSlot = DragSlot.Instance;
+
+        //임의로 아이템 넣기 => json으로 아이템을 잘 넣을 수 있는지 확인 후 삭제
+        //P_InputGetItem(0);
+        //P_InputGetItem(1);
     }
 
     private void Update()
@@ -91,7 +108,7 @@ public class InventoryManager : MonoBehaviour
     /// 키를 입력하여 임의의 아이템을 인벤토리에 저장
     /// -치트용 코드이므로 아이템 획득이 잘 작동되면 추후 삭제 예정
     /// </summary>
-    public void P_InputGetItem(Item _item)
+    public void P_InputGetItem(int _idx)
     {
         //if (Input.GetKeyDown(KeyCode.F))
         //{
@@ -107,15 +124,29 @@ public class InventoryManager : MonoBehaviour
 
         int count = slots.Length;
 
-        for (int iNum = 0;iNum < count; iNum++)
+        for (int iNum = 0; iNum < count; iNum++)
         {
-            if (slots[iNum].P_GetItem() == null)
+            //아이템 번호를 이용하여 빈 슬롯 확인
+            if (slots[iNum].P_GetItemIdx() == -1) //아이템 번호가 -1이면 빈 슬롯
             {
-                Item scItem = _item;
-                slots[iNum].P_AddItem(scItem);
+                //Item scItem = _item;
+                //slots[iNum].P_AddItem(scItem);
+                slots[iNum].P_AddItem(_idx, GetSprite(_idx));
                 //Destroy(_item.gameObject);
                 return; //아이템이 추가되면 리턴하여 멈추게 하기
             }
         }
+    }
+
+    private Sprite GetSprite(int _idx)
+    {
+        ItemJson data = listJsonItem.Find(x => x.idx == _idx);
+        if (data == null)
+        {
+            Debug.LogError($"올바른값이 들어오지 않았습니다.\n idx = {_idx}");
+            return null;
+        }
+
+        return listSpr.Find(x => x.name == data.nameSprite);
     }
 }

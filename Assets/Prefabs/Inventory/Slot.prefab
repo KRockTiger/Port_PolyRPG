@@ -167,9 +167,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a5db2295f28965488b6f93f99b33a82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dragSlot: {fileID: 0}
   item: {fileID: 0}
+  idx: -1
   itemImage: {fileID: 926364516892401314}
   checkImage: {fileID: 3095018265126873740}
+  isDragging: 0
 --- !u!1 &3095018265126873740
 GameObject:
   m_ObjectHideFlags: 0

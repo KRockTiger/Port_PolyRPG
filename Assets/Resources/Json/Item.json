@@ -1,0 +1,14 @@
+[
+    {
+        "idx": 0,
+        "name": "basicSword",
+        "nameSprite": "BasicSwordImage",
+        "attack": 2.0
+    },
+    {
+        "idx": 1,
+        "name": "ornateSword",
+        "nameSprite": "OrnateSwordImage",
+        "attack": 4.0
+    }
+]

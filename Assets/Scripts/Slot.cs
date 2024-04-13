@@ -5,11 +5,13 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+//04.16) 슬롯의 아이템 정보를 Item.sc => Item.json으로 변경하여 구조 변경 시작
 public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
 {
     [SerializeField] private DragSlot dragSlot;
 
     [SerializeField] private Item item; //슬롯에 들어갈 아이템
+    [SerializeField] int idx; //아이템 번호 확인
     [SerializeField] private Image itemImage; //아이템 이미지
     [SerializeField] private GameObject checkImage; //슬롯 이미지, 슬롯 위 커서의 유무에 따라 결정
 
@@ -35,11 +37,11 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     public void OnBeginDrag(PointerEventData eventData)
     {
         //드래그를 시작할 때 드래그 슬롯에 아이템 정보를 넘겨야 함
-        if (item != null) //슬롯에 아이템이 있을 때만 실행
+        if (idx != -1) //슬롯에 아이템이 있을 때만 실행
         {
             isDragging = true;
             dragSlot.gameObject.SetActive(true); //드래그 슬롯 활성화
-            dragSlot.P_SetDragItem(item); //드래그 슬롯에 아이템 넣기
+            dragSlot.P_SetDragItem(idx, itemImage.sprite); //드래그 슬롯에 아이템 넣기
             Color setAlpha = new Color(1, 1, 1, 0.5f); //반투명 설정
             itemImage.color = setAlpha; //컬러 입히기
         }
@@ -48,7 +50,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     public void OnDrag(PointerEventData eventData)
     {
         //드래그 슬롯에 아이템이 존재할 때만 적용
-        if (dragSlot.P_GetItem() != null)
+        if (dragSlot.P_GetItemIdx() != -1)
         {
             dragSlot.transform.position = eventData.position; //드래그 하는 동안 마우스에 따라 움직임
         }
@@ -71,16 +73,20 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
         
         //만약 드래그 슬롯에 아이템이 있는 경우
         //=> 드롭한 슬롯에 아이템이 존재한 경우
-        if (dragSlot.P_GetItem() != null)
+        if (dragSlot.P_GetItemIdx() != -1)
         {
-            item = dragSlot.P_GetItem(); //현 슬롯에 아이템을 넣기
+            //item = dragSlot.P_GetItem(); //현 슬롯에 아이템을 넣기
+            idx = dragSlot.P_GetItemIdx(); //현 슬롯에 아이템을 넣기
+            itemImage.sprite = dragSlot.P_GetItemSprite();
             dragSlot.P_ReSetDragItem(); //아이템 지우기
             dragSlot.gameObject.SetActive(false); //드래그 슬롯 비활성화
         }
 
         else //아이템이 없는 경우
         {
-            item = null; //아이템 지우기
+            idx = -1; //아이템 지우기
+            itemImage.sprite = null; //아이템 이미지 삭제
+            itemImage.gameObject.SetActive(false); //이미지 오브젝트 비활성화
             dragSlot.gameObject.SetActive(false); //드래그 슬롯 비활성화
         }
     }
@@ -92,34 +98,10 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     public void OnDrop(PointerEventData eventData)
     {
         //드래그 슬롯에 아이템이 존재할 경우
-        if (dragSlot.P_GetItem() != null)
+        if (dragSlot.P_GetItemIdx() != -1)
         {
             //아이템 교체
             ChangeItem();
-        }
-    }
-
-    private void Update()
-    {
-        CheckItem();
-    }
-
-    /// <summary>
-    /// 슬롯 내 아이템 확인
-    /// -추후 Update로 상시 확인이 아닌 아이템을 넣거나 빼는 순간에만 사용할 수 있도록 수정 필요
-    /// </summary>
-    private void CheckItem()
-    {
-        if (item != null) //슬롯에 아이템이 존재할 경우
-        {
-            itemImage.gameObject.SetActive(true); //아이템 이미지 오브젝트 활성화
-            itemImage.sprite = item.P_GetItemSprite(); //저장된 아이템의 스프라이트를 가져오기
-        }
-
-        else
-        {
-            itemImage.gameObject.SetActive(false); //아이템 이미지 오브젝트 비활성화
-            itemImage.sprite = null; //아이템 이미지 비우기
         }
     }
 
@@ -130,23 +112,29 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     /// </summary>
     private void ChangeItem()
     {
-        Item tempItem = item; //B 슬롯의 아이템을 임의의 변수에 저장
-        item = dragSlot.P_GetItem(); //B슬롯에 드래그한 아이템을 저장
+        int tempItemIdx = idx; //B 슬롯의 아이템 번호를 임의의 변수에 저장
+        Sprite tempItemSprite = itemImage.sprite; //B 슬롯의 아이템 이미지를 임의의 변수에 저장
+        idx = dragSlot.P_GetItemIdx(); //B슬롯에 드래그한 아이템 번호를 저장
+        itemImage.sprite = dragSlot.P_GetItemSprite(); //아이템 이미지를 저장
+        itemImage.gameObject.SetActive(true); //이미지 오브젝트 활성화
         dragSlot.P_ReSetDragItem(); //드래그 슬롯에 있는 아이템 삭제
 
-        if (tempItem != null) //드롭한 슬롯에 아이템이 있으면
+        if (tempItemIdx != -1) //드롭한 슬롯에 아이템이 있으면
         {
-            dragSlot.P_SetDragItem(tempItem); //임의로 저장된 아이템을 드래그 슬롯에 저장
+            dragSlot.P_SetDragItem(tempItemIdx, tempItemSprite); //임의로 저장된 아이템을 드래그 슬롯에 저장
         }
     }
 
     /// <summary>
     /// 슬롯에 아이템 추가
     /// 03.26) 외부에서 아이템을 획득하는 코드를 사용하기 때문에 public으로 교체
+    /// 04.13) 아이템 정보를 Item.sc => Item.json으로 변경
     /// </summary>
-    public void P_AddItem(Item _item)
+    public void P_AddItem(int _idx, Sprite _nameSprite)
     {
-        item = _item;
+        idx = _idx;
+        itemImage.sprite = _nameSprite;
+        itemImage.gameObject.SetActive(true); //아이템 이미지 오브젝트 활성화
     }
 
     /// <summary>
@@ -168,9 +156,9 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     /// 아이템 정보 가져오기
     /// </summary>
     /// <returns></returns>
-    public Item P_GetItem()
+    public int P_GetItemIdx()
     {
-        return item;
+        return idx;
     }
 
     /// <summary>

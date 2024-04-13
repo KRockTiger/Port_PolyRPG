@@ -211,7 +211,7 @@ public class PlayerMove : MonoBehaviour
         {
             //isJump = true; //점프 트리거 활성화 ==> 03.18) 기능 변경으로 인한 취소
 
-            velocity.y = jumpForce;
+            velocity.y = Mathf.Sqrt(jumpForce * 2);
             animator.SetTrigger("Jump"); //anistate에서 바로 실행할 수 있게 설정
             animator.SetBool("Jumping", true); //점프 애니메이션에서 머무를 수 있게 true
 

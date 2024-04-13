@@ -34,6 +34,7 @@ public class PickUpItem : MonoBehaviour
     {
         //아이템 태그있는 오브젝트 찾기
         GameObject[] items = GameObject.FindGameObjectsWithTag("Item");
+        //GameObject[] items = GameObject.FindGameObjectsWithTag("DropItem");
 
         shortDistance = Mathf.Infinity; //최대 수치로 저장
 
@@ -73,8 +74,10 @@ public class PickUpItem : MonoBehaviour
 
                 if (Input.GetKeyDown(pickUpKeyCode))
                 {
-                    InputGetItem(targetItem.GetComponent<Item>());
-                    //=> 아이템 태그가 있는 오브젝트는 Item 컴포넌트가 붙어 있으므로 컴포넌트에 있는 정보를 가져온다.
+                    Item scItem = targetItem.GetComponent<Item>(); //아이템 컴포넌트 가져오기
+                    int itemIdx = scItem.P_GetItemIdx();
+                    InputGetItem(itemIdx); //아이템 번호를 가져오기                  
+                    Destroy(targetItem.gameObject);
                 }
             }
 
@@ -93,10 +96,8 @@ public class PickUpItem : MonoBehaviour
     /// <summary>
     /// 아이템 획득 키
     /// </summary>
-    private void InputGetItem(Item _item)
+    private void InputGetItem(int _idx)
     {
-        inventory.P_InputGetItem(_item);
-        //Destroy(_item.gameObject);
-        //targetItem = null; //타겟 비우기
+        inventory.P_InputGetItem(_idx);
     }
 }
