@@ -2,13 +2,25 @@
     {
         "idx": 0,
         "name": "basicSword",
+        "nameType": "Equip",
         "nameSprite": "BasicSwordImage",
-        "attack": 2.0
+        "floatValue": 2.0,
+        "intValue": 0
     },
     {
         "idx": 1,
         "name": "ornateSword",
+        "nameType": "Equip",
         "nameSprite": "OrnateSwordImage",
-        "attack": 4.0
+        "floatValue": 4.0,
+        "intValue": 0
+    },
+    {
+        "idx": 2,
+        "name": "healPostion01",
+        "nameType": "Used",
+        "nameSprite": "HealPostionImage01",
+        "floatValue": 0,
+        "intValue": 10
     }
 ]

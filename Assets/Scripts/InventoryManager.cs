@@ -110,32 +110,35 @@ public class InventoryManager : MonoBehaviour
     /// </summary>
     public void P_InputGetItem(int _idx)
     {
-        //if (Input.GetKeyDown(KeyCode.F))
-        //{
-        //    int count = slots.Length;
-        //    for (int iNum = 0; iNum < count; iNum++)
-        //    {
-        //        if (slots[iNum].P_GetItem() == null)
-        //        {
-        //            slots[iNum].P_AddItem(addItem);
-        //        }
-        //    }
-        //}
-
-        int count = slots.Length;
+        int count = slots.Length; //슬롯 개수 확인
 
         for (int iNum = 0; iNum < count; iNum++)
         {
             //아이템 번호를 이용하여 빈 슬롯 확인
             if (slots[iNum].P_GetItemIdx() == -1) //아이템 번호가 -1이면 빈 슬롯
             {
-                //Item scItem = _item;
-                //slots[iNum].P_AddItem(scItem);
-                slots[iNum].P_AddItem(_idx, GetSprite(_idx));
-                //Destroy(_item.gameObject);
+                slots[iNum].P_AddItem(GetItemJson(_idx), GetSprite(_idx));
                 return; //아이템이 추가되면 리턴하여 멈추게 하기
             }
         }
+    }
+
+    public string P_GetItemType(int _idx)
+    {
+        return listJsonItem[_idx].nameType;
+    }
+
+    private ItemJson GetItemJson(int _idx)
+    {
+        ItemJson data = listJsonItem.Find(x => x.idx == _idx);
+        
+        if (data == null)
+        {
+            Debug.LogError("존재하지 않은 아이템입니다.");
+            return null;
+        }
+        
+        return data;
     }
 
     private Sprite GetSprite(int _idx)

@@ -76,6 +76,7 @@ public class PickUpItem : MonoBehaviour
                 {
                     Item scItem = targetItem.GetComponent<Item>(); //아이템 컴포넌트 가져오기
                     int itemIdx = scItem.P_GetItemIdx();
+                    string itemType = scItem.P_GetItemType().ToString();
                     InputGetItem(itemIdx); //아이템 번호를 가져오기                  
                     Destroy(targetItem.gameObject);
                 }
