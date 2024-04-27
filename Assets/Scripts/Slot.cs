@@ -17,7 +17,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     }
 
     [SerializeField] private ItemJson itemData; //아이템 정보
-    [SerializeField] private ItemType itemType; //아이템 종류
+    private ItemType itemType; //아이템 종류
 
     //[SerializeField] private Item item; //슬롯에 들어갈 아이템
     [SerializeField] int idx; //아이템 번호 확인
@@ -28,15 +28,29 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     [SerializeField] private TMP_Text textCount;
 
     [SerializeField] private bool isDragging; //드래그 중인 상태일 경우 true
+    [SerializeField] private bool isUsedFull; //소모품 아이템의 갯수가 최대일 경우 true
+
+    private int maxItemCount = 9; //슬롯에 들어갈 수 있는 아이템 최대 갯수
 
     private void Start()
     {
         dragSlot = DragSlot.Instance;
+        inventoryManager = InventoryManager.Instance;
     }
 
     private void Update()
     {
         textCount.text = itemCount.ToString();
+
+        if (itemCount == maxItemCount)
+        {
+            isUsedFull = true;
+        }
+
+        else if (itemCount < maxItemCount)
+        {
+            isUsedFull = false;
+        }
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -54,7 +68,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     public void OnBeginDrag(PointerEventData eventData)
     {
         //드래그를 시작할 때 드래그 슬롯에 아이템 정보를 넘겨야 함
-        if (idx != -1) //슬롯에 아이템이 있을 때만 실행 => 아이템 번호가 -1일 때
+        if (idx != 0) //슬롯에 아이템이 있을 때만 실행
         {
             isDragging = true;
             dragSlot.gameObject.SetActive(true); //드래그 슬롯 활성화
@@ -67,7 +81,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     public void OnDrag(PointerEventData eventData)
     {
         //드래그 슬롯에 아이템이 존재할 때만 적용
-        if (dragSlot.P_GetItemIdx() != -1)
+        if (dragSlot.P_GetItemIdx() != 0)
         {
             dragSlot.transform.position = eventData.position; //드래그 하는 동안 마우스에 따라 움직임
         }
@@ -90,9 +104,10 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
         
         //만약 드래그 슬롯에 아이템이 있는 경우
         //=> 드롭한 슬롯에 아이템이 존재한 경우
-        if (dragSlot.P_GetItemIdx() != -1)
+        if (dragSlot.P_GetItemIdx() != 0)
         {
             //item = dragSlot.P_GetItem(); //현 슬롯에 아이템을 넣기
+            idx = dragSlot.P_GetItemIdx();
             itemData = dragSlot.P_GetItemData(); //현 슬롯에 아이템을 넣기
             itemCount = dragSlot.P_GetItemCount();
             itemImage.sprite = dragSlot.P_GetItemSprite();
@@ -104,7 +119,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
         else //아이템이 없는 경우
         {
             itemData = null; //아이템 지우기
-            idx = -1;
+            idx = 0;
             itemCount = 0;
             itemImage.sprite = null; //아이템 이미지 삭제
             itemImage.gameObject.SetActive(false); //이미지 오브젝트 비활성화
@@ -119,11 +134,78 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     /// <param name="eventData"></param>
     public void OnDrop(PointerEventData eventData)
     {
+        ItemJson dragItemData = dragSlot.P_GetItemData();
+
         //드래그 슬롯에 아이템이 존재할 경우
-        if (dragSlot.P_GetItemIdx() != -1)
+        if (dragSlot.P_GetItemIdx() != 0)
         {
             //아이템 교체
+            //ChangeItem(); //단순히 이것만 쓰면 버그가 없음
+
+            if (dragItemData.nameType != "Used") //드래그 중인 아이템이 소모품이 아닌 경우
+            {
+                //아이템 교체
+                ChangeItem();
+            }
+
+            else if (dragItemData.nameType == "Used") //드래그 중인 아이템이 소모품일 경우
+            {
+                if (dragItemData.idx == idx) //드래그 슬롯의 아이템과 드롭한 슬롯의 아이템이 동일할 경우
+                {
+                    //나뉘어져 있던 동일한 소모품 아이템을 합친다.
+                    SumItem();
+                }
+
+                else if (dragItemData.idx != idx) //동일한 아이템이 아닐 경우
+                {
+                    ChangeItem();
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 한 슬롯에 있는 소모품의 아이템 갯수가 최대치가 아닌 갯수를 가지고 있을 때 같은 아이템에 있는 슬롯에 드래그하면
+    /// 드롭한 슬롯에 아이템이 더해지고 만약 더하고 남은 아이템이 존재할 경우 드래그를 시작한 슬롯에 남기게 한다.
+    /// OnDrop함수 아래에 사용하므로 순서 주의
+    /// </summary>
+    private void SumItem()
+    {
+        //이 함수는 동일한 아이템을 합산한다는 조건아래에 사용하므로 갯수만 구한다.
+        int dragItemCount = dragSlot.P_GetItemCount();
+
+        if (dragItemCount == maxItemCount) //이미 드래그 슬롯의 아이템 갯수가 최대치일 경우
+        {
             ChangeItem();
+        }
+
+        else //최대치가 아닐 경우
+        {
+            int sumCount = dragItemCount + itemCount;
+
+            //합쳐서 최대치 이하일 경우
+            //드롭한 슬롯에 아이템을 옮기고 드래그한 슬롯의 아이템을 삭제
+            if (sumCount <= maxItemCount && isDragging == false)
+            {
+                itemCount = sumCount; //드롭 슬롯에 합산
+                dragSlot.P_ReSetDragItem(); //드래그 슬롯의 아이템을 삭제
+            }
+
+            //합쳐서 최대치 초과할 경우
+            //드롭한 슬롯의 아이템 갯수는 최대치로 놓고 남는 갯수를 드래그 슬롯의 아이템 갯수로 저장
+            else if (sumCount > maxItemCount)
+            {
+                if (!isUsedFull) //드롭한 슬롯의 아이템 갯수가 최대가 아닌경우
+                {
+                    itemCount = maxItemCount; //아이템 갯수를 최대치로 설정
+                    dragSlot.P_SetItemCount(sumCount - maxItemCount); //남는 갯수를 드래그 슬롯에 저장
+                }
+
+                else //드롭한 슬롯의 아이템 갯수가 최대인 경우
+                {
+                    ChangeItem();
+                }
+            }
         }
     }
 
@@ -146,7 +228,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
         dragSlot.P_ReSetDragItem(); //드래그 슬롯에 있는 아이템 삭제
         objItemCount.SetActive(itemData.nameType == ItemType.Used.ToString());
 
-        if (tempItemIdx != -1) //드롭한 슬롯에 아이템이 있으면
+        if (tempItemIdx != 0) //드롭한 슬롯에 아이템이 있으면
         {
             dragSlot.P_SetDragItem(tempItemData, tempItemCount, tempItemSprite); //임의로 저장된 아이템을 드래그 슬롯에 저장
         }
@@ -157,7 +239,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     /// 03.26) 외부에서 아이템을 획득하는 코드를 사용하기 때문에 public으로 교체
     /// 04.13) 아이템 정보를 Item.sc => Item.json으로 변경
     /// </summary>
-    public void P_AddItem(ItemJson _itemData, Sprite _nameSprite, int _count = 1)
+    public void P_AddItem(ItemJson _itemData, Sprite _nameSprite)
     {
         if(inventoryManager == null) inventoryManager = InventoryManager.Instance;
 
@@ -169,8 +251,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
         if (itemData.nameType == ItemType.Used.ToString()) //아이템이 소모품일 경우
         {
             objItemCount.SetActive(true); //아이템 갯수 창 활성화
-            itemCount += _count;
-            textCount.text = itemCount.ToString();
+            textCount.text = itemCount.ToString(); //아이템 갯수를 string으로 변형
         }
     }
 
@@ -214,6 +295,19 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     }
 
     /// <summary>
+    /// 소모품 아이템의 갯수를 늘리는 함수
+    /// </summary>
+    /// <param name="_count"></param>
+    public void P_SetItemCount(int _count)
+    {
+        itemCount += _count;
+        if (itemCount >= maxItemCount) //아이템 갯수 숫자가 최대 이상일 경우
+        {
+            isUsedFull = true;
+        }
+    }
+
+    /// <summary>
     /// 드래그 정보 가져오기
     /// </summary>
     /// <returns></returns>
@@ -222,9 +316,13 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
         return isDragging;
     }
 
+    public bool P_GetIsUsedFull()
+    {
+        return isUsedFull;
+    }
+
     /// <summary>
-    /// 슬롯에 마우스를 올린 채로 인벤토리를 끄고 마우스를 치운 다음 다시 키면
-    /// 마우스가 위에 없어서 체크 오브젝트가 켜져있는 현상이 있으므로 방지하기 위해 사용
+    ///  
     /// </summary>
     public GameObject P_GetActiveSlot()
     {

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
+using System;
 
 public class InventoryManager : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class InventoryManager : MonoBehaviour
 
     [SerializeField] private DragSlot dragSlot;
 
+    [SerializeField] private int maxSlotItemCount; //하나의 슬롯에 들어갈 수 있는 최대 아이템 갯수
     [SerializeField] private GameObject inventory;
     [SerializeField] private GameObject itemSlots;
     [SerializeField] private Slot[] slots;
@@ -53,7 +55,7 @@ public class InventoryManager : MonoBehaviour
 
     private void Update()
     {
-        CheckSlots();
+        //CheckSlots();
     }
 
     private void CheckSlots()
@@ -108,17 +110,77 @@ public class InventoryManager : MonoBehaviour
     /// 키를 입력하여 임의의 아이템을 인벤토리에 저장
     /// -치트용 코드이므로 아이템 획득이 잘 작동되면 추후 삭제 예정
     /// </summary>
-    public void P_InputGetItem(int _idx)
+    public void P_InputGetItem(int _idx, int _count = 1)
     {
         int count = slots.Length; //슬롯 개수 확인
+        ItemJson itemData = GetItemJson(_idx); //아이템 정보 가져오기
 
-        for (int iNum = 0; iNum < count; iNum++)
+        if (itemData.nameType != "Used")
+        //획득한 아이템이 소모품이 아닐 경우
         {
-            //아이템 번호를 이용하여 빈 슬롯 확인
-            if (slots[iNum].P_GetItemIdx() == -1) //아이템 번호가 -1이면 빈 슬롯
+            //아이템 번호를 이용하여 슬롯의 아이템 유무 및 종류 확인하기
+            for (int iNum01 = 0; iNum01 < count; iNum01++)
             {
-                slots[iNum].P_AddItem(GetItemJson(_idx), GetSprite(_idx));
-                return; //아이템이 추가되면 리턴하여 멈추게 하기
+                if (slots[iNum01].P_GetItemIdx() == 0)
+                //아이템 번호가 -1이면 빈 슬롯
+                {
+                    slots[iNum01].P_AddItem(GetItemJson(_idx), GetSprite(_idx));
+                    return; //아이템이 추가되면 리턴하여 멈추게 하기
+                }
+            }
+        }
+
+        else if (itemData.nameType == "Used")
+        //슬롯에 들어가는 아이템이 소모품일 경우
+        {
+            //슬롯 전체 확인
+            for (int iNum02 = 0; iNum02 < count; iNum02++)
+            {
+                if (itemData.idx == slots[iNum02].P_GetItemIdx())
+                //슬롯에 동일한 아이템이 존재할 경우
+                {
+                    if (!slots[iNum02].P_GetIsUsedFull())
+                    //동일한 아이템이 존재하지만 아이템 갯수가 최대치가 아닌 경우
+                    {
+                        //임의로 계산한 슬롯의 아이템 갯수와 획득할 아이템 갯수의 합
+                        //하나의 슬롯이 최대로 가질 수 있는 소모품 갯수를 임의의 최대 기준으로 등록 설정
+                        int sumItemCount = slots[iNum02].P_GetItemCount() + _count;
+
+                        if (sumItemCount <= maxSlotItemCount)
+                        //기존 슬롯에 있는 아이템 갯수와 획득한 아이템 갯수의 합이 최대 이하일 경우
+                        {
+                            slots[iNum02].P_SetItemCount(_count); //제시된 아이템의 수만큼 증가시키기
+                            return;
+                        }
+
+                        else if (sumItemCount > maxSlotItemCount) //갯수의 합이 최대 초과일 경우                    
+                        {
+                            int overCount = sumItemCount - maxSlotItemCount;
+                            for (int iNum03 = 0; iNum03 < count; iNum03++)
+                            {
+                                if (slots[iNum03].P_GetItemIdx() == 0)
+                                //아이템 번호가 0이면 빈 슬롯
+                                {
+                                    slots[iNum03].P_AddItem(GetItemJson(_idx), GetSprite(_idx)); //슬롯에 아이템 추가
+                                    slots[iNum03].P_SetItemCount(overCount); //갯수 증가
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            //위에서 return이 되지 않으면 슬롯에 동일한 아이템이 존재하지 않으므로 새로 추가
+            for (int iNum04 = 0; iNum04 < count; iNum04++)
+            {
+                if (slots[iNum04].P_GetItemIdx() == 0)
+                //아이템 번호가 -1이면 빈 슬롯
+                {
+                    slots[iNum04].P_AddItem(GetItemJson(_idx), GetSprite(_idx)); //슬롯에 아이템 추가
+                    slots[iNum04].P_SetItemCount(_count); //갯수 증가
+                    return;
+                }
             }
         }
     }

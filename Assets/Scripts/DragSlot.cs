@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
 
 /// <summary>
 /// 아이템을 드래그할 때 사용하기 위한 스크립트
@@ -15,7 +14,7 @@ public class DragSlot : MonoBehaviour
     //[SerializeField] private Item item;
     private ItemJson itemData; //아이템 정보
     private int itemCount;
-    [SerializeField] private int idx = -1; //아이템 번호 => -1은 빈 슬롯을 의미함
+    [SerializeField] private int idx = 0; //아이템 번호 => 0은 빈 슬롯을 의미함
     [SerializeField] private Image itemImage;
 
     private void Awake()
@@ -53,7 +52,7 @@ public class DragSlot : MonoBehaviour
     public void P_ReSetDragItem()
     {
         itemData = null;
-        idx = -1;
+        idx = 0;
         itemCount = 0;
         itemImage.sprite = null;
     }
@@ -79,6 +78,11 @@ public class DragSlot : MonoBehaviour
     public int P_GetItemCount()
     {
         return itemCount;
+    }
+
+    public void P_SetItemCount(int _count)
+    {
+        itemCount = _count;
     }
 
     public Sprite P_GetItemSprite()

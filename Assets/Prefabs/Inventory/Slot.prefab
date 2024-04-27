@@ -177,7 +177,8 @@ MonoBehaviour:
     nameSprite: 
     floatValue: 0
     intValue: 0
-  idx: -1
+  itemType: 0
+  idx: 0
   itemCount: 0
   itemImage: {fileID: 926364516892401314}
   checkImage: {fileID: 3095018265126873740}
@@ -297,7 +298,7 @@ RectTransform:
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
   m_AnchoredPosition: {x: 0.000030517578, y: 0}
-  m_SizeDelta: {x: 40, y: 30}
+  m_SizeDelta: {x: 60, y: 50}
   m_Pivot: {x: 1, y: 0}
 --- !u!222 &7170360283488025307
 CanvasRenderer:
@@ -372,7 +373,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.000022888184, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1982329957516553555
@@ -430,12 +431,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 18
+  m_fontSize: 29.45
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
   m_fontSizeMin: 2
-  m_fontSizeMax: 18
+  m_fontSizeMax: 30
   m_fontStyle: 1
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
@@ -466,7 +467,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 80.06195, y: 9.649658, z: 80.0155, w: 9.964073}
+  m_margin: {x: 69.645874, y: 0.037231445, z: 71.318726, w: 0.5790024}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
