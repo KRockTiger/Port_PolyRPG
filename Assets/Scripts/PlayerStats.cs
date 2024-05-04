@@ -9,6 +9,9 @@ public class PlayerStats : MonoBehaviour
 {
     public PlayerStats Instance; //싱글톤으로 설정
 
+    [SerializeField] private float setHP; //초기 체력 설정
+    [SerializeField] private float curHP; //현재 체력
+    [SerializeField] private float maxHP; //최대 체력
     [SerializeField] private float moveSpeed; //플레이어의 이동속도
     [SerializeField] private float attackRange; //플레이어의 공격범위
     [SerializeField] private float setDashCoolTime; //설정한 대쉬 쿨타임
@@ -31,6 +34,7 @@ public class PlayerStats : MonoBehaviour
     private void Start()
     {
         dashCount = 5;
+        curHP = setHP;
     }
 
     private void Update()
@@ -52,6 +56,20 @@ public class PlayerStats : MonoBehaviour
                 dashCount += 1; //1회복
                 curDashCoolTime = setDashCoolTime; //쿨타임 재설정
             }
+        }
+    }
+    
+    /// <summary>
+    /// 캐릭터 체력을 회복활 때 사용
+    /// </summary>
+    /// <param name="_setHP"></param>
+    public void P_SetHP(float _setHP)
+    {
+        curHP += _setHP;
+
+        if (curHP >= maxHP) //회복한 체력이 최대 체력보다 높으면
+        {
+            curHP = maxHP; //최대 체력으로 설정
         }
     }
 }

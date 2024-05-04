@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
-using System;
 
 public class InventoryManager : MonoBehaviour
 {
@@ -14,6 +13,7 @@ public class InventoryManager : MonoBehaviour
     [SerializeField] private GameObject inventory;
     [SerializeField] private GameObject itemSlots;
     [SerializeField] private Slot[] slots;
+    [SerializeField] private EquipSlot equipSlot;
 
     [SerializeField] private Item addItem; //치트로 추가할 임의의 아이템으로 추후 삭제 예정
 
@@ -22,9 +22,10 @@ public class InventoryManager : MonoBehaviour
         Item,
     }
     [SerializeField] List<TextAsset> listJsons; //json파일 등록
-    [SerializeField] List<ItemJson> listJsonItem; //저장된 아이템의 json파일(확인용)
+    [SerializeField] List<ItemData> listJsonItem; //저장된 아이템의 json파일(확인용)
 
     [SerializeField] List<Sprite> listSpr;
+    [SerializeField] List<GameObject> listObjEquip;
 
     private void Awake()
     {
@@ -38,7 +39,7 @@ public class InventoryManager : MonoBehaviour
             Destroy(gameObject);
         }
         string json = listJsons[(int)jsonType.Item].text;
-        listJsonItem = JsonConvert.DeserializeObject<List<ItemJson>>(json);
+        listJsonItem = JsonConvert.DeserializeObject<List<ItemData>>(json);
 
         //Sprite spr = P_GetSprite(1);
     }
@@ -113,7 +114,7 @@ public class InventoryManager : MonoBehaviour
     public void P_InputGetItem(int _idx, int _count = 1)
     {
         int count = slots.Length; //슬롯 개수 확인
-        ItemJson itemData = GetItemJson(_idx); //아이템 정보 가져오기
+        ItemData itemData = GetItemJson(_idx); //아이템 정보 가져오기
 
         if (itemData.nameType != "Used")
         //획득한 아이템이 소모품이 아닐 경우
@@ -190,9 +191,9 @@ public class InventoryManager : MonoBehaviour
         return listJsonItem[_idx].nameType;
     }
 
-    private ItemJson GetItemJson(int _idx)
+    public ItemData GetItemJson(int _idx)
     {
-        ItemJson data = listJsonItem.Find(x => x.idx == _idx);
+        ItemData data = listJsonItem.Find(x => x.idx == _idx);
         
         if (data == null)
         {
@@ -203,9 +204,9 @@ public class InventoryManager : MonoBehaviour
         return data;
     }
 
-    private Sprite GetSprite(int _idx)
+    public Sprite GetSprite(int _idx)
     {
-        ItemJson data = listJsonItem.Find(x => x.idx == _idx);
+        ItemData data = listJsonItem.Find(x => x.idx == _idx);
         if (data == null)
         {
             Debug.LogError($"올바른값이 들어오지 않았습니다.\n idx = {_idx}");
@@ -213,5 +214,29 @@ public class InventoryManager : MonoBehaviour
         }
 
         return listSpr.Find(x => x.name == data.nameSprite);
+    }
+
+    public GameObject GetEquip(int _idx)
+    {
+        ItemData data = listJsonItem.Find(x => x.idx == _idx);
+        
+        if (data == null || data.nameType != "Equip")
+        {
+            Debug.Log("올바른 오브젝트가 아닙니다.");
+            return null;
+        }
+
+        return listObjEquip.Find(x => x.name == data.nameObject);
+    }
+
+    /// <summary>
+    /// 장비 교체 함수
+    /// </summary>
+    public int P_EquipChange(int _idx)
+    {
+        ItemData dempData = equipSlot.P_GetItemData();
+        int dempIdx = dempData.idx;
+        equipSlot.P_SetItemData(_idx);
+        return dempIdx;
     }
 }

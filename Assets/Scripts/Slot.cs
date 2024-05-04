@@ -16,12 +16,14 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
         Null, //아이템 없음
     }
 
-    [SerializeField] private ItemJson itemData; //아이템 정보
-    private ItemType itemType; //아이템 종류
+    [SerializeField] private ItemData itemData; //아이템 정보
+    [SerializeField] private ItemType itemType; //아이템 종류
 
     //[SerializeField] private Item item; //슬롯에 들어갈 아이템
     [SerializeField] int idx; //아이템 번호 확인
     [SerializeField] int itemCount; //아이템 갯수
+    [SerializeField] float setUseCoolTime; //설정한 아이템 사용 쿨타임
+    [SerializeField] float curUseCoolTime; //현재 아이템 사용 쿨타임
     [SerializeField] private Image itemImage; //아이템 이미지
     [SerializeField] private GameObject checkImage; //슬롯 이미지, 슬롯 위 커서의 유무에 따라 결정
     [SerializeField] private GameObject objItemCount; //아이템 갯수 오브젝트
@@ -29,6 +31,8 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
 
     [SerializeField] private bool isDragging; //드래그 중인 상태일 경우 true
     [SerializeField] private bool isUsedFull; //소모품 아이템의 갯수가 최대일 경우 true
+    [SerializeField] private bool isClickSlot; //슬롯 내 아이템을 클릭가능 여부
+    [SerializeField] private bool isCoolTimeSlot; //슬롯 내 쿨타임 여부
 
     private int maxItemCount = 9; //슬롯에 들어갈 수 있는 아이템 최대 갯수
 
@@ -51,18 +55,35 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
         {
             isUsedFull = false;
         }
+
+        //마우스 오른쪽 버튼으로 아이템 사용
+        if (Input.GetKeyDown(KeyCode.Mouse1))
+        {
+            UseSlot();
+        }
+
+        if (isCoolTimeSlot) //만약 아이템 쿨타임이 발생한다면
+        {
+            curUseCoolTime -= Time.deltaTime; //쿨다운
+            if (curUseCoolTime < 0)
+            {
+                isCoolTimeSlot = false;
+            }
+        }
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
         //마우스를 슬롯 위에 올려두면 슬롯 이미지 활성화
         checkImage.SetActive(true);
+        isClickSlot = true;
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         //마우스를 슬롯 밖으로 꺼내면 슬롯 이미지 비활성화
         checkImage.SetActive(false);
+        isClickSlot = false;
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -114,6 +135,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
             dragSlot.P_ReSetDragItem(); //아이템 지우기
             dragSlot.gameObject.SetActive(false); //드래그 슬롯 비활성화
             objItemCount.SetActive(itemData.nameType == ItemType.Used.ToString());
+            CheckItemType(itemData.nameType); //슬롯 내 아이템 타입 설정
         }
 
         else //아이템이 없는 경우
@@ -125,6 +147,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
             itemImage.gameObject.SetActive(false); //이미지 오브젝트 비활성화
             dragSlot.gameObject.SetActive(false); //드래그 슬롯 비활성화
             objItemCount.SetActive(false); //아이템 갯수 창 비활성화
+            itemType = ItemType.Null; //아이템이 존재하지 않으므로 Null로 설정
         }
     }
 
@@ -134,7 +157,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     /// <param name="eventData"></param>
     public void OnDrop(PointerEventData eventData)
     {
-        ItemJson dragItemData = dragSlot.P_GetItemData();
+        ItemData dragItemData = dragSlot.P_GetItemData();
 
         //드래그 슬롯에 아이템이 존재할 경우
         if (dragSlot.P_GetItemIdx() != 0)
@@ -216,7 +239,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     /// </summary>
     private void ChangeItem()
     {
-        ItemJson tempItemData = itemData; //B 슬롯의 아이템 번호를 임의의 변수에 저장
+        ItemData tempItemData = itemData; //B 슬롯의 아이템 번호를 임의의 변수에 저장
         int tempItemIdx = idx; //B 슬롯의 아이템 번호를 임의의 변수에 저장
         int tempItemCount = itemCount;
         Sprite tempItemSprite = itemImage.sprite; //B 슬롯의 아이템 이미지를 임의의 변수에 저장
@@ -227,6 +250,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
         itemImage.gameObject.SetActive(true); //이미지 오브젝트 활성화
         dragSlot.P_ReSetDragItem(); //드래그 슬롯에 있는 아이템 삭제
         objItemCount.SetActive(itemData.nameType == ItemType.Used.ToString());
+        CheckItemType(itemData.nameType);
 
         if (tempItemIdx != 0) //드롭한 슬롯에 아이템이 있으면
         {
@@ -235,11 +259,55 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     }
 
     /// <summary>
+    /// 슬롯 내 아이템을 사용하는 함수
+    /// </summary>
+    private void UseSlot()
+    {
+        if (!isClickSlot || isCoolTimeSlot) //슬롯 사용 가능한 상태 혹은 아이템 쿹라임이면 리턴
+        {
+            return;
+        }
+
+        switch (itemType) //아이템 타입에 따라 결정
+        {
+            case ItemType.Equip:
+                //클릭한 장비를 장착 및 변경
+                int dempIdx = inventoryManager.P_EquipChange(idx); //현 슬롯 아이템 번호를 인벤에 넘기고 장착 아이템의 번호를 가져온다
+                itemData = inventoryManager.GetItemJson(dempIdx); //가져온 번호를 토대로 Json에 등록된 아이템을 입력
+                idx = itemData.idx;
+                itemImage.sprite = inventoryManager.GetSprite(dempIdx);
+                break;
+
+            case ItemType.Used:
+                //소모품 아이템을 1개 소모하여 사용
+                itemCount -= 1;
+                if (itemCount == 0) //아이템 갯수가 0이 되면 빈 슬롯으로 만들기 => 아이템 데이터 제거
+                {
+                    itemData = null; //아이템 지우기
+                    idx = 0;
+                    itemCount = 0;
+                    itemImage.sprite = null; //아이템 이미지 삭제
+                    itemImage.gameObject.SetActive(false); //이미지 오브젝트 비활성화
+                    dragSlot.gameObject.SetActive(false); //드래그 슬롯 비활성화
+                    objItemCount.SetActive(false); //아이템 갯수 창 비활성화
+                    itemType = ItemType.Null; //아이템이 존재하지 않으므로 Null로 설정
+                }
+                curUseCoolTime = setUseCoolTime; //쿨타임 설정
+                isCoolTimeSlot = true;
+                break;
+
+            case ItemType.Null:
+                Debug.Log("슬롯 내 아이템이 존재하지 않습니다.");
+                break;
+        }   
+    }
+
+    /// <summary>
     /// 슬롯에 아이템 추가
     /// 03.26) 외부에서 아이템을 획득하는 코드를 사용하기 때문에 public으로 교체
     /// 04.13) 아이템 정보를 Item.sc => Item.json으로 변경
     /// </summary>
-    public void P_AddItem(ItemJson _itemData, Sprite _nameSprite)
+    public void P_AddItem(ItemData _itemData, Sprite _nameSprite)
     {
         if(inventoryManager == null) inventoryManager = InventoryManager.Instance;
 
@@ -252,6 +320,26 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
         {
             objItemCount.SetActive(true); //아이템 갯수 창 활성화
             textCount.text = itemCount.ToString(); //아이템 갯수를 string으로 변형
+        }
+
+        CheckItemType(itemData.nameType);
+    }
+
+    /// <summary>
+    /// json에 설정한 타입을 불러와서 슬롯 내 아이템 종류에 저장
+    /// </summary>
+    /// <param name="_typeName"></param>
+    private void CheckItemType(string _typeName)
+    {
+        switch (_typeName)
+        {
+            case "Equip":
+                itemType = ItemType.Equip;
+                break;
+
+            case "Used":
+                itemType = ItemType.Used;
+                break;
         }
     }
 
@@ -279,7 +367,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
         return idx;
     }
 
-    public ItemJson P_GetItemData()
+    public ItemData P_GetItemData()
     {
         return itemData;
     }

@@ -177,14 +177,19 @@ MonoBehaviour:
     nameSprite: 
     floatValue: 0
     intValue: 0
-  itemType: 0
+  itemType: 2
   idx: 0
   itemCount: 0
+  setUseCoolTime: 1
+  curUseCoolTime: 0
   itemImage: {fileID: 926364516892401314}
   checkImage: {fileID: 3095018265126873740}
   objItemCount: {fileID: 7168766529978324215}
   textCount: {fileID: 6402311156445643256}
   isDragging: 0
+  isUsedFull: 0
+  isClickSlot: 0
+  isCoolTimeSlot: 0
 --- !u!1 &3095018265126873740
 GameObject:
   m_ObjectHideFlags: 0
