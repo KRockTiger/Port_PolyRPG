@@ -6,6 +6,7 @@ using UnityEngine.EventSystems;
 public class PlayerMove : MonoBehaviour
 {
     private PlayerAttack playerAttack;
+    private PlayerStats playerStats;
     private CharacterController controller;
     private Camera cam;
     private Animator animator;
@@ -23,6 +24,7 @@ public class PlayerMove : MonoBehaviour
     [SerializeField] private float jumpForce; //캐릭터 점프력
     [SerializeField] private float floatCheckGround; //캐릭터 점프력
     private float turnSpeed; //회전 속도
+    [SerializeField] private bool isMoving = true; //캐릭터 무빙 가능 여부
     [SerializeField] private bool isAttacking = false; //공격중일 때 이동을 막기 위한 트리거
     [SerializeField] private bool isDash = false; //대쉬 기능 사용
     
@@ -43,6 +45,7 @@ public class PlayerMove : MonoBehaviour
         controller = GetComponent<CharacterController>(); //캐릭터 컨트롤러 접근
         animator = GetComponent<Animator>();
         playerAttack = GetComponent<PlayerAttack>();
+        playerStats = GetComponent<PlayerStats>();
     }
 
     private void Start()
@@ -52,6 +55,7 @@ public class PlayerMove : MonoBehaviour
 
     private void Update()
     {
+        if (!isMoving) { return; } //타 기능에 의해 캐릭터를 움직이지 못하게 하기 위한 제어 장치
         InputKey();
         Moving();
         Dash();
@@ -66,6 +70,9 @@ public class PlayerMove : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Mouse1) && !isDash && isGround) //마우스 오른쪽 버튼으로 사용하고 중복 입력 방지함
         {
+            if (playerStats.P_GetDashCount() <= 0) //만약 대쉬 카운트가 0이하가 되면 리턴
+            { return; }
+            playerStats.P_UseDashCount();
             curDashTime = setDashTime; //타이머 설정
             isDash = true; //대쉬 사용
             animator.SetTrigger("DashStart");
@@ -265,6 +272,11 @@ public class PlayerMove : MonoBehaviour
     public void P_SetIsAttacking(bool _isAttacking)
     {
         isAttacking = _isAttacking;
+    }
+
+    public void P_SetIsMoving(bool _isMoving)
+    {
+        isMoving = _isMoving;
     }
 
     /// <summary>

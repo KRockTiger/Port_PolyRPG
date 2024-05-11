@@ -35,6 +35,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     [SerializeField] private bool isCoolTimeSlot; //슬롯 내 쿨타임 여부
 
     private int maxItemCount = 9; //슬롯에 들어갈 수 있는 아이템 최대 갯수
+    private WaitForSeconds waitCoolTime = new WaitForSeconds(1f);
 
     private void Start()
     {
@@ -56,19 +57,37 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
             isUsedFull = false;
         }
 
-        //마우스 오른쪽 버튼으로 아이템 사용
-        if (Input.GetKeyDown(KeyCode.Mouse1))
-        {
-            UseSlot();
-        }
-
         if (isCoolTimeSlot) //만약 아이템 쿨타임이 발생한다면
         {
-            curUseCoolTime -= Time.deltaTime; //쿨다운
+            curUseCoolTime -= Time.unscaledDeltaTime; //쿨다운
+                                              //(05.11 버그 => TimeScale이 1이 아니면 -= Time.deltaTime 코드가 제대로 작동 안됨)
+                                              //게다가 인벤토리가 비활성화 상태에도 Update가 작동이 안됨
             if (curUseCoolTime < 0)
             {
                 isCoolTimeSlot = false;
             }
+            
+            //05.11) 슬롯 스크립트 혼자서는 TimeScale, 오브젝트 비활성화로 인한 코드 중지 라는 헛점으로 인해 쿨타임 관리가 힘듦
+            //그렇다면 모든 슬롯의 컴포넌트를 가진 InventoryManager가 직접 각 슬롯의 쿨타임을 관리해야함
+            //하지만 여기서 생기는 문제
+            //1. 인벤매니저 혼자서 어떻게 많은 슬롯의 쿨타임을 각각 체크하여 관리하는가
+            //2. GamePause기능으로 TimeScale = 0f일 때 -= timeScale 이 작동하지 않는다. 그러면 어떻게 쿨타임을 인벤 매니저가 관리하는가
+
+            //==> 강사님 의견 : 아이템 회복을 인벤토리에서 먹지 말고 퀵슬롯을 만들어서 관리하는 식으로 설계를 하는 것을 추천함
+            //===> 실시간 전투 컨셉의 게임에서 인벤토리로 게임을 멈추고 회복하는 것은 게임성에 문제가 될 수 있는 가능성을 보여주심
+            //     오히려 인벤토리를 켰을 때 쿨타임을 멈춰서 게임 취지에 맞는 밸런스를 만드는 것을 추천하심
+            //따라서 슬롯이 아닌 동일한 아이템의 쿨타임을 관리해주는 CoolTimeManager 스크립트를 만들어서 관리하는 것을 추천
+
+            //==> 피드백 후 내 생각 : 현 게임은 원신의 기능을 만들려는 목적을 토대로 기획하여 만들 기능의 영향을 깊게 생각 안했었음
+            //                      모작을 하는 것도 좋지만 만들 기능이 게임 밸런스에 어떠한 영향을 끼칠 수 있는지 생각할 수 있게 해주는
+            //                      느낌을 받았음 그리고 인벤에서 회복하는 것보다 퀵슬롯으로 피관리 하는 것이 게임성에 더 좋을 것 같다고
+            //                      느껴짐 하지만 아이템 중복 입력 방지를 목적으로 만드는 쿨타임은 괜찮다고 피드백 받아 나중에 쓸만 할듯
+        }
+        
+        //마우스 오른쪽 버튼으로 아이템 사용
+        if (Input.GetKeyDown(KeyCode.Mouse1))
+        {
+            UseSlot();
         }
     }
 
@@ -82,6 +101,18 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     public void OnPointerExit(PointerEventData eventData)
     {
         //마우스를 슬롯 밖으로 꺼내면 슬롯 이미지 비활성화
+        checkImage.SetActive(false);
+        isClickSlot = false;
+    }
+
+    /// <summary>
+    /// 1)마우스가 슬롯 위에 있는 상태에서 인벤토리를 끄고 마우스를 치우고 나서 다시 인벤토리를 키면
+    /// 그 슬롯이 활성화 상태로 유지되는 버그가 생기기 때문에 외부에서 강제로 끄게 만든다.
+    /// -현 코드를 슬롯의 정보를 가진 InventoryManager 스크립트에 넘기고
+    /// -GameManager에서 for문으로 슬롯을 체크 하여 강제로 끄게 하기
+    /// </summary>
+    public void P_SlotOff()
+    {
         checkImage.SetActive(false);
         isClickSlot = false;
     }
@@ -409,11 +440,28 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
         return isUsedFull;
     }
 
-    /// <summary>
-    ///  
-    /// </summary>
     public GameObject P_GetActiveSlot()
     {
         return checkImage;
+    }
+
+    public bool P_GetIsClickSlot()
+    {
+        return isClickSlot;
+    }
+
+    public bool P_GetIsCoolTimeSlot()
+    {
+        return isCoolTimeSlot;
+    }
+
+    public void P_CoolDown()
+    {
+        
+    }
+
+    public void P_UnIsClickSlot()
+    {
+        isClickSlot = false;
     }
 }

@@ -14,16 +14,22 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private float attackRange; //공격범위
 
     [SerializeField] private int attackCycle = 0; //연속 공격 횟수로 공격할 때마다 1씩 증가하며 공격이 끝나면 0으로 변경
-    [SerializeField] private GameObject attackTrigger; //공격 판정을 넣을 트리거
+    [SerializeField] private BoxCollider attackTrigger; //공격 판정을 넣을 트리거
+    //05.11) 기존 게임 오브젝트의 콜리더에서 각 무기가 가진 콜리더로 공격 판정 변경
+    //==> 다만 고정된 위치에서의 콜리더를 사용하는 것이 아닌 움직이는 오브젝트에서 사용되는 콜리더로 판정이 변경되어
+    //==> 공격 판정이 불안정해졌기 때문에 추후 수정 필수
+    [SerializeField] private bool isAttacking = true; //플레이어 공격 가능 유무
     [SerializeField] private bool isAttack; //플레이어의 공격을 담당
     [SerializeField] private bool isGround; //플레이어가 땅에 있는 지 유무
     [SerializeField,Tooltip("연속 공격이 가능한 타이밍일 때 True")] private bool isNext; //다음 공격 가능하게 하는 트리거
     [SerializeField,Tooltip("바로 연속 공격을 실행할 때 True")] private bool nextAttack; //연속 공격 사용
 
+    private WaitForSeconds waitTime = new WaitForSeconds(0.5f); //공격 콜리더 켜진 후 다시 끄기까지의 대기시간
+
     private void Awake()
     {
         playerMove = GetComponent<PlayerMove>();
-        attackTrigger.SetActive(false);
+        //attackTrigger.enabled = false;
     }
 
     private void Update()
@@ -40,7 +46,8 @@ public class PlayerAttack : MonoBehaviour
     private void InputAttack()
     {
         //플레이어가 땅에 밝아있는 상태에서 공격 중인 상태가 아닐 때 공격 ==> 나중에 연속 공격을 넣게 되면 추후 수정
-        if (Input.GetKeyDown(KeyCode.Mouse0) && isGround)
+        //05.11) => 특정 기능 사용에 따라 키 입력 제어 추가
+        if (Input.GetKeyDown(KeyCode.Mouse0) && isGround && isAttacking)
         {
             //목표 몬스터가 근처에 있을 경우  바로 회전하여 공격
             if (targetEnemy != null) //만약 목표 몬스터가 존재하지 않을 경우 예외 처리
@@ -73,9 +80,9 @@ public class PlayerAttack : MonoBehaviour
     /// </summary>
     private IEnumerator AC_AttackTrigger()
     {
-        attackTrigger.SetActive(true); //공격 트리거 활성화하여 공격하기
-        yield return new WaitForSeconds(0.1f);
-        attackTrigger.SetActive(false); //공격 트리거 비활성화하여 공격막기
+        attackTrigger.enabled = true; //공격 트리거 활성화하여 공격하기
+        yield return waitTime;
+        attackTrigger.enabled = false; //공격 트리거 비활성화하여 공격막기
     }
 
     /// <summary>
@@ -164,6 +171,11 @@ public class PlayerAttack : MonoBehaviour
         isAttack = _isAttack;
     }
 
+    public void P_SetIsAttacking(bool _isAttacking)
+    {
+        isAttacking = _isAttacking;
+    }
+
     /// <summary>
     /// 
     /// </summary>
@@ -211,5 +223,14 @@ public class PlayerAttack : MonoBehaviour
     public int P_GetAttackCycle()
     {
         return attackCycle;
+    }
+
+    /// <summary>
+    /// 공격 판정을 넣어줄 무기 오브젝트의 콜리더 변수
+    /// </summary>
+    /// <param name="_obj"></param>
+    public void P_SetWeaponCollider(BoxCollider _obj)
+    {
+        attackTrigger = _obj;
     }
 }

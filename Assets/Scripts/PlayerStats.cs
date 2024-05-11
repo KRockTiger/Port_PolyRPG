@@ -14,6 +14,9 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private float maxHP; //최대 체력
     [SerializeField] private float moveSpeed; //플레이어의 이동속도
     [SerializeField] private float attackRange; //플레이어의 공격범위
+    [SerializeField] private float setAttackPoint; //설정할 캐릭터 공격력
+    [SerializeField] private float curAttackPoint; //현재 캐릭터 공격력
+    [SerializeField] private float weaponAttackPoint; //추가되는 무기 공격력
     [SerializeField] private float setDashCoolTime; //설정한 대쉬 쿨타임
     [SerializeField] private float curDashCoolTime; //현재 대쉬 쿨타임
     [SerializeField] private int dashCount; //차감하여 대쉬 쓰게하는 대쉬 카운트
@@ -29,12 +32,10 @@ public class PlayerStats : MonoBehaviour
         {
             Destroy(this);
         }
-    }
 
-    private void Start()
-    {
         dashCount = 5;
         curHP = setHP;
+        curAttackPoint = setAttackPoint;
     }
 
     private void Update()
@@ -43,7 +44,7 @@ public class PlayerStats : MonoBehaviour
     }
 
     /// <summary>
-    /// 실시간으로 대쉬 카운트 확인
+    /// 실시간으로 대쉬 카운트 확인하고 관리
     /// </summary>
     private void CheckDashCount()
     {
@@ -53,17 +54,36 @@ public class PlayerStats : MonoBehaviour
             
             if (curDashCoolTime <= 0f) //쿨타임이 끝나면
             {
-                dashCount += 1; //1회복
+                dashCount++; //1회복
                 curDashCoolTime = setDashCoolTime; //쿨타임 재설정
             }
         }
+    }
+
+    /// <summary>
+    /// 대쉬기능에서 사용하여 카운트 감소
+    /// </summary>
+    public void P_UseDashCount()
+    {
+        dashCount--;
+    }
+
+    public int P_GetDashCount()
+    {
+        return dashCount;
+    }
+
+    public void P_SetWeaponAttackPoint(float _weaponAttackPoint)
+    {
+        weaponAttackPoint = _weaponAttackPoint; //장비 슬롯 무기의 공격력을 가져옴
+        curAttackPoint = setAttackPoint + weaponAttackPoint; //설정 공격력에 무기 공격력을 더하여 현재 캐릭터 공격력을 저장
     }
     
     /// <summary>
     /// 캐릭터 체력을 회복활 때 사용
     /// </summary>
     /// <param name="_setHP"></param>
-    public void P_SetHP(float _setHP)
+    public void P_HealHP(float _setHP)
     {
         curHP += _setHP;
 
