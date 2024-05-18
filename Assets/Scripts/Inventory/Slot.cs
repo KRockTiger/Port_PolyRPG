@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
+using System;
 
 //04.16) 슬롯의 아이템 정보를 Item.sc => Item.json으로 변경하여 구조 변경 시작
 public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
@@ -188,6 +189,12 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
     /// <param name="eventData"></param>
     public void OnDrop(PointerEventData eventData)
     {
+        //만약 드래그 슬롯의 아이템이 퀵슬롯 아이템이면서 현 슬롯의 아이템의 종류가 장비일 경우
+        if (dragSlot.P_GetIsQuickItem() && itemType == (ItemType)Enum.Parse(typeof(ItemType), "Equip"))
+        {
+            return;
+        }
+
         ItemData dragItemData = dragSlot.P_GetItemData();
 
         //드래그 슬롯에 아이템이 존재할 경우
@@ -281,6 +288,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
         itemImage.gameObject.SetActive(true); //이미지 오브젝트 활성화
         dragSlot.P_ReSetDragItem(); //드래그 슬롯에 있는 아이템 삭제
         objItemCount.SetActive(itemData.nameType == ItemType.Used.ToString());
+        textCount.text = itemCount.ToString();
         CheckItemType(itemData.nameType);
 
         if (tempItemIdx != 0) //드롭한 슬롯에 아이템이 있으면

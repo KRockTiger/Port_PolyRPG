@@ -17,11 +17,12 @@ public class DragSlot : MonoBehaviour
     }
 
     //[SerializeField] private Item item;
-    private ItemData itemData; //아이템 정보
+    [SerializeField] private ItemData itemData; //아이템 정보
     private int itemCount;
     [SerializeField] private ItemType itemType;
     [SerializeField] private int idx = 0; //아이템 번호 => 0은 빈 슬롯을 의미함
     [SerializeField] private Image itemImage;
+    [SerializeField] private bool isQuickItem; //퀵슬롯의 아이템을 드래그 중일 경우 true
 
     private void Awake()
     {
@@ -110,6 +111,11 @@ public class DragSlot : MonoBehaviour
         itemCount = _count;
     }
 
+    public void P_SetIsQuickItem(bool _isQuickItem)
+    {
+        isQuickItem = _isQuickItem;
+    }
+
     public Sprite P_GetItemSprite()
     {
         return itemImage.sprite;
@@ -118,5 +124,10 @@ public class DragSlot : MonoBehaviour
     public ItemType P_GetItemType()
     {
         return itemType;
+    }
+
+    public bool P_GetIsQuickItem()
+    {
+        return isQuickItem;
     }
 }
