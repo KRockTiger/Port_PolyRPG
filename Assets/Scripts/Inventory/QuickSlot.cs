@@ -186,4 +186,17 @@ public class QuickSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         dragSlot.gameObject.SetActive(false); //드래그 슬롯 비활성화
         objItemCount.gameObject.SetActive(false); //아이템 갯수 창 비활성화
     }
+
+    /// <summary>
+    /// 슬롯 내 아이템 갯수에 맞춰 표기
+    /// </summary>
+    public void P_SetCount()
+    {
+        objItemCount.text = itemCount.ToString();
+    }
+
+    public void P_OffCheckObj()
+    {
+        objCheckImage.SetActive(false);
+    }
 }

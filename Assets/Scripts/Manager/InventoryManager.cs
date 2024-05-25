@@ -8,6 +8,7 @@ public class InventoryManager : MonoBehaviour
     public static InventoryManager Instance;
 
     [SerializeField] private DragSlot dragSlot;
+    [SerializeField] private QuickSlot quickSlot;
 
     [SerializeField] private int maxSlotItemCount; //하나의 슬롯에 들어갈 수 있는 최대 아이템 갯수
     [SerializeField] private GameObject inventory;
@@ -80,6 +81,8 @@ public class InventoryManager : MonoBehaviour
                 slots[iNum].P_ReSetSlotItem();
             }
         }
+
+        quickSlot.P_OffCheckObj();
 
         dragSlot.P_ReSetDragItem();
         dragSlot.gameObject.SetActive(false);

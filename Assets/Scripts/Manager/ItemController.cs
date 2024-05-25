@@ -114,4 +114,24 @@ public class ItemController : MonoBehaviour
 
         return false;
     }
+
+    /// <summary>
+    /// 적용되는 아이템의 쿨타임을 비율로 나타내어 UI로 표현하기 위한 float 함수
+    /// </summary>
+    /// <param name="_itemSmallType"></param>
+    /// <returns></returns>
+    public float P_FillAmoutCoolTime(string _itemSmallType)
+    {
+        for (int i = 0; i < coolItemTypes.Count; i++)
+        {
+            //타 스크립트에 사용하여 소모 아이템 종류를 string화 하여 가져온 후 다시 enum으로 변형시켜 비교하여 적용
+            if (coolItemTypes[i].coolType == (CoolType)Enum.Parse(typeof(CoolType), _itemSmallType))
+            {
+                //현재 쿨타임 / 설정된 쿨타임
+                return coolItemTypes[i].curCoolTime / coolItemTypes[i].setCoolTime;
+            }
+        }
+
+        return 1f; //쿨타임 없으면 기본적으로 1로 둔다
+    }
 }

@@ -15,6 +15,7 @@ public class QuickItem : MonoBehaviour
     [Header("퀵슬롯 아이템 정보")]
     [SerializeField] private ItemData itemData;
     [SerializeField] private Image itemImage;
+    [SerializeField] private Image coolBlurImage;
     [SerializeField] private TMP_Text objItemCount;
     [SerializeField] private int itemCount;
 
@@ -37,6 +38,7 @@ public class QuickItem : MonoBehaviour
             itemCount = quickSlot.P_GetItemCount(); //현재 아이템 갯수 가져오기
             objItemCount.gameObject.SetActive(true);
             objItemCount.text = itemCount.ToString();
+            SetCoolBlur(itemData.nameSmallType); //특정 아이템 쿨타임 표시
         }
 
         else //퀵슬롯에 아이템이 없으면
@@ -46,6 +48,7 @@ public class QuickItem : MonoBehaviour
             itemImage.sprite = null;
             itemCount = 0;
             objItemCount.gameObject.SetActive(false);
+            coolBlurImage.gameObject.SetActive(false);
         }
     }
 
@@ -66,6 +69,7 @@ public class QuickItem : MonoBehaviour
             }
 
             quickSlot.P_SetItemCount(1); //아이템 1개 소모
+            quickSlot.P_SetCount(); //퀵슬롯의 아이템 갯수 표기
 
             if (quickSlot.P_GetItemCount() <= 0) //퀵슬롯 내 아이템을 다 사용할 경우
             {
@@ -74,5 +78,17 @@ public class QuickItem : MonoBehaviour
 
             itemController.P_CoolOn(itemSmallType); //특정 세부종류(ex.회복 아이템)의 모든 아이템 쿨타임 적용
         }
+    }
+
+    /// <summary>
+    /// 아이템을 사용하여 쿨타임이 발생했을 때 육안으로 보기 쉽게 UI로 표현
+    /// </summary>
+    private void SetCoolBlur(string _itemSmallType)
+    {
+        //쿨타임의 비율에 따라 이미지 형태 변경
+        coolBlurImage.fillAmount = itemController.P_FillAmoutCoolTime(_itemSmallType);
+
+        //쿨타임 유무에 따라 오브젝트 활성화 처리
+        coolBlurImage.gameObject.SetActive(itemController.P_SearchCoolType(_itemSmallType));
     }
 }

@@ -209,7 +209,8 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
                 ChangeItem();
             }
 
-            else if (dragItemData.nameType == "Used") //드래그 중인 아이템이 소모품일 경우
+            //드래그 중인 아이템이 소모품이면서 퀵슬롯이 아닌 경우
+            else if (dragItemData.nameType == "Used" && !dragSlot.P_GetIsQuickItem())
             {
                 if (dragItemData.idx == idx) //드래그 슬롯의 아이템과 드롭한 슬롯의 아이템이 동일할 경우
                 {
@@ -221,6 +222,13 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IB
                 {
                     ChangeItem();
                 }
+            }
+
+            //드래그 중인 아이템이 퀵슬롯의 소모품일 경우
+            else if (dragItemData.nameType == "Used" && dragSlot.P_GetIsQuickItem())
+            {
+                //그냥 아이템 교체
+                ChangeItem();
             }
         }
     }

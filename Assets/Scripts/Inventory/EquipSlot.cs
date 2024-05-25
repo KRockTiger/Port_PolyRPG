@@ -87,7 +87,7 @@ public class EquipSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         BoxCollider boxCollider = curWeapon.GetComponent<BoxCollider>();
 
         if(playerAttack == null) playerAttack = GameManager.Instance.PlayerAttack;
-        playerAttack.P_SetWeaponCollider(boxCollider);
+        //playerAttack.P_SetWeaponCollider(boxCollider); //추후 조정
 
         boxCollider.enabled = false; //만약 박스 콜리더가 켜져있으면 바로 끌 수 있게 만드는 예외처리 코드
 

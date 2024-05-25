@@ -233,4 +233,9 @@ public class PlayerAttack : MonoBehaviour
     {
         attackTrigger = _obj;
     }
+
+    public void P_SetAttackTriggerBox()
+    {
+
+    }
 }
