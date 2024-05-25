@@ -1,6 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.UI;
 
 /// <summary>
 /// 모든 씬에서 스텟은 공유를 하기 때문에 싱글톤으로 설정함
@@ -19,7 +22,16 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private float weaponAttackPoint; //추가되는 무기 공격력
     [SerializeField] private float setDashCoolTime; //설정한 대쉬 쿨타임
     [SerializeField] private float curDashCoolTime; //현재 대쉬 쿨타임
-    [SerializeField] private int dashCount; //차감하여 대쉬 쓰게하는 대쉬 카운트
+    [SerializeField, Range(0,5)] private int dashCount; //차감하여 대쉬 쓰게하는 대쉬 카운트
+    private int beforeDashCount;
+
+    [Header("UI표기")]
+    [SerializeField] private GameObject objDashCounts; //이미지 부모 오브젝트
+    [SerializeField] private Image[] imgDashCounts; //위의 자식 오브젝트들을 담을 배열 변수
+    //
+    [SerializeField] private GameObject[] objDashCount; //위의 자식 오브젝트들을 담을 배열 변수
+    [SerializeField] private Image fillDashImg;
+    [SerializeField] private int maxDashCount = 5;
 
     private void Awake()
     {
@@ -38,6 +50,11 @@ public class PlayerStats : MonoBehaviour
         curAttackPoint = setAttackPoint;
     }
 
+    private void Start()
+    {
+        imgDashCounts = objDashCounts.GetComponentsInChildren<Image>();
+    }
+
     private void Update()
     {
         CheckDashCount();
@@ -51,13 +68,65 @@ public class PlayerStats : MonoBehaviour
         if (dashCount < 5)
         {
             curDashCoolTime -= Time.deltaTime;
-            
+
             if (curDashCoolTime <= 0f) //쿨타임이 끝나면
             {
                 dashCount++; //1회복
                 curDashCoolTime = setDashCoolTime; //쿨타임 재설정
             }
         }
+        #region 이전 코드
+        //대쉬 카운트에 따라 이미지 적용
+        //대쉬 이미지는 카운트 갯수에 따라 0번 오브젝트 부터 비활성화
+        //if (dashCount > 0 && dashCount < 5) //대쉬 카운트가 일정 수량만 가지고 있을 때
+        //{
+        //    for (int i = 4; i >= 5 - dashCount; i--) //끝부분 부터 활성화
+        //    {
+        //        imgDashCounts[i].gameObject.SetActive(true);
+        //    }
+
+        //    for (int i = 0; i < 5 - dashCount; i++) //첫부분 부터 비활성화
+        //    {
+        //        imgDashCounts[i].gameObject.SetActive(false);
+        //    }
+        //}
+
+        //else if (dashCount == 0) //카운트가 다 소모됬다면
+        //{
+        //    for (int i = 0; i < 5; i++)
+        //    {
+        //        imgDashCounts[i].gameObject.SetActive(false); //다 비활성화
+        //    }
+        //}
+
+        //else if (dashCount == 5) //카운트가 다 회복됬다면
+        //{
+        //    for (int i = 0; i < 5; i++)
+        //    {
+        //        imgDashCounts[i].gameObject.SetActive(true); //다 활성화
+        //    }
+        //}
+        #endregion
+
+        if (beforeDashCount != dashCount) //카운트 정보가 바뀌어지면
+        {
+            beforeDashCount = dashCount; //카운트 정보 최신화시키고
+            ModifyDisplayCoolTime(); //이미지 변화 시키기
+        }
+    }
+
+    /// <summary>
+    /// 대쉬 카운트가 일정 시간마다 바뀌어지면 사용되는 함수
+    /// </summary>
+    private void ModifyDisplayCoolTime()
+    {
+        //int count = objDashCount.Length;
+        //for (int iNum = 0; iNum < count; ++iNum)
+        //{
+        //    objDashCount[iNum].SetActive(iNum < dashCount);
+        //}
+
+        fillDashImg.fillAmount = (float)dashCount / maxDashCount;
     }
 
     /// <summary>
@@ -78,7 +147,7 @@ public class PlayerStats : MonoBehaviour
         weaponAttackPoint = _weaponAttackPoint; //장비 슬롯 무기의 공격력을 가져옴
         curAttackPoint = setAttackPoint + weaponAttackPoint; //설정 공격력에 무기 공격력을 더하여 현재 캐릭터 공격력을 저장
     }
-    
+
     /// <summary>
     /// 캐릭터 체력을 회복활 때 사용
     /// </summary>

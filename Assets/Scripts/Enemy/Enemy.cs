@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.EditorTools;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
@@ -17,9 +18,11 @@ public class Enemy : MonoBehaviour
     [SerializeField] private bool isAttacking; //전투 중 상태
     [SerializeField] private bool attackAble; //전투 가능 상태
     [SerializeField] private bool isMoving; //이동 상태
-    [SerializeField] private Transform groundChecker;
-    [SerializeField] private float groundDistance;
-    [SerializeField] private LayerMask groundMask;
+    [SerializeField] private Transform groundChecker; //발이 땅에 닿았는 지를 판단할 Transform
+    [SerializeField] private float groundDistance; //발과 땅과의 거리
+    [SerializeField] private LayerMask groundMask; //바닥판정을 받을 레이어마스크
+    [SerializeField] private GameObject prfHPImage; //체력바 이미지 프리팹
+    [SerializeField] private GameObject objHPImage; //체력바 이미지 오브젝트
 
     [Header("캐릭터 설정")]
     [SerializeField] private float setHP; //설정할 체력
@@ -52,6 +55,8 @@ public class Enemy : MonoBehaviour
     private void Start()
     {
         goAttack = true;
+        objHPImage = Instantiate(prfHPImage, gameObject.transform); //현 오브젝트에서 자식으로 생성
+        //objHPImage.SetActive(false); //체력바 비활성화
     }
 
     private void Update()
@@ -59,6 +64,7 @@ public class Enemy : MonoBehaviour
         Gravity();
         SearchPlayer();
         Attacking();
+        HPPassToUI();
     }
 
     private void Gravity()
@@ -89,6 +95,7 @@ public class Enemy : MonoBehaviour
         if (distance <= startSearchRange) //몬스터의 탐색 범위보다 거리가 가깝다면
         {
             isChase = true; //추적 상태 키기
+            objHPImage.SetActive(true); //체력바 활성화
 
             if (distance <= attackRange) //공격 범위보다 가깝다면
             {
@@ -104,6 +111,7 @@ public class Enemy : MonoBehaviour
         else if (distance >= endSearchRange) //몬스터의 탐색 중단 범위 보다 거리가 멀면
         {
             isChase = false; //추적 상태 끄기
+            objHPImage.SetActive(false); //체력바 비활성화
             attackAble = false; //비전투 상태 전환,
                                 //몬스터의 공격 중 범위에서 벗어났을 때 유지되는 현상을 고침
         }
@@ -137,6 +145,15 @@ public class Enemy : MonoBehaviour
 
         //오브젝트 이동
         controller.Move(targetDirection * moveSpeed * Time.deltaTime);
+    }
+
+    /// <summary>
+    /// 현재 체력 정보를 생성한 UI오브젝트에 넘겨서 표기
+    /// </summary>
+    private void HPPassToUI()
+    {
+        EnemyHP sc = objHPImage.GetComponent<EnemyHP>();
+        sc.P_CurrectEnemyInformation(curHP, setHP, transform);
     }
 
     /// <summary>
