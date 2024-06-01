@@ -437,7 +437,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95a1f4bf2a3eb6545b21850b4e4fb848, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  setYPosition: 2
+  setYPosition: 0
   imgMidHP: {fileID: 9097723027322823612}
   imgFrontHP: {fileID: 2192655726967840304}
 --- !u!1 &8273575383046091010

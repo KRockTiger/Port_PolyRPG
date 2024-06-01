@@ -8,6 +8,9 @@ public class Enemy : MonoBehaviour
     private EnemyAnimation enemyAnimation;
     private CharacterController controller;
 
+    [Header("보스 확인")]
+    [SerializeField, Tooltip("보스 몬스터일 경우 True로 표시")] private bool isBoss;
+
     [Header("기본 설정")]
     private float turnSpeed; //회전 속도를 담을 변수
     private float gravity = -9.81f; //중력값
@@ -35,6 +38,9 @@ public class Enemy : MonoBehaviour
     [SerializeField] private float curAttackTimer; //현재 공격 타이머
     [SerializeField] private bool goAttack; //공격 발사 가능 상태
     [SerializeField] private bool isTimer; //타이머 조절용
+
+    [Header("체력바 설정")]
+    [SerializeField, Range(0, 5)] private float objHPUIPositionY; //체력바 위치를 정하기 위해 넘길 값
 
     private void OnTriggerEnter(Collider other)
     {
@@ -88,7 +94,7 @@ public class Enemy : MonoBehaviour
         if (isHitting || isAttacking) { return; } //피격중 혹은 공격중일 경우 리턴
 
         GameObject player = GameObject.FindGameObjectWithTag("Player"); //플레이어 탐색
-
+        
         //플레이어와의 거리 측정
         float distance = Vector3.Distance(player.transform.position, transform.position);
     
@@ -153,7 +159,7 @@ public class Enemy : MonoBehaviour
     private void HPPassToUI()
     {
         EnemyHP sc = objHPImage.GetComponent<EnemyHP>();
-        sc.P_CurrectEnemyInformation(curHP, setHP, transform);
+        sc.P_CurrectEnemyInformation(curHP, setHP, objHPUIPositionY, transform);
     }
 
     /// <summary>
@@ -189,6 +195,8 @@ public class Enemy : MonoBehaviour
     {
         Debug.Log("맞았습니다!");
         isAttacking = false; //공격 캔슬 판정을 받아야 함
+
+        if (isBoss) { return; } //보스 몬스터일 경우 리턴
         StartCoroutine(C_SetIsHitting());
     }
 

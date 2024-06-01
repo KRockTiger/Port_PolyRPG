@@ -20,7 +20,7 @@ public class EnemyHP : MonoBehaviour
 
     private void Update()
     {
-        //CheckUIPosition();
+        CheckUIPosition();
         CheckUIRotation();
         CheckEnemyHP();
     }
@@ -69,10 +69,11 @@ public class EnemyHP : MonoBehaviour
     /// Enemy스크립트에서 설정된 필요한 몬스터 정보를 현 스크립트에 실시간으로 넘겨서 UI표시 및 저장
     /// (현재 체력, 최대 체력)
     /// </summary>
-    public void P_CurrectEnemyInformation(float _curHP, float _maxHP, Transform _trsEnemy)
+    public void P_CurrectEnemyInformation(float _curHP, float _maxHP, float _positionY, Transform _trsEnemy)
     {
         curHP = _curHP;
         maxHP = _maxHP;
+        setYPosition = _positionY;
         trsEnemy = _trsEnemy;
     }
 }
