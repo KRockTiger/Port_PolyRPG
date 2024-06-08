@@ -16,7 +16,7 @@ public class Enemy : MonoBehaviour
     private float gravity = -9.81f; //중력값
     private Vector3 velocity; //중력 적용 변수
     [SerializeField] private bool isChase; //추적 상태
-    [SerializeField] private bool isGround; //추적 상태
+    [SerializeField] private bool isGround; //땅 체크
     [SerializeField] private bool isHitting; //피격 상태 ==> 피격 중일 경우 약간의 그로기 시간을 가짐
     [SerializeField] private bool isAttacking; //전투 중 상태
     [SerializeField] private bool attackAble; //전투 가능 상태
@@ -26,10 +26,13 @@ public class Enemy : MonoBehaviour
     [SerializeField] private LayerMask groundMask; //바닥판정을 받을 레이어마스크
     [SerializeField] private GameObject prfHPImage; //체력바 이미지 프리팹
     [SerializeField] private GameObject objHPImage; //체력바 이미지 오브젝트
+    [SerializeField] private BoxCollider attackTrigger; //공격 트리거
 
     [Header("캐릭터 설정")]
     [SerializeField] private float setHP; //설정할 체력
     [SerializeField] private float curHP; //현재 체력
+    [SerializeField] private float attackPoint; //공격력
+    [SerializeField] private float defendPoint; //방어력
     [SerializeField] private float moveSpeed; //이동 속도
     [SerializeField] private float startSearchRange; //탐색 범위
     [SerializeField] private float endSearchRange; //탐색 중단 범위
@@ -38,18 +41,12 @@ public class Enemy : MonoBehaviour
     [SerializeField] private float curAttackTimer; //현재 공격 타이머
     [SerializeField] private bool goAttack; //공격 발사 가능 상태
     [SerializeField] private bool isTimer; //타이머 조절용
+    [SerializeField] private bool isDie; //캐릭터 사망 처리
+   
+    private WaitForSeconds waitTime = new WaitForSeconds(0.5f); //공격 대기 시간
 
     [Header("체력바 설정")]
     [SerializeField, Range(0, 5)] private float objHPUIPositionY; //체력바 위치를 정하기 위해 넘길 값
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.tag == "Attack")
-        {
-            Hit();
-            enemyAnimation.P_SetTrigger_Hit();
-        }
-    }
 
     private void Awake()
     {
@@ -68,9 +65,9 @@ public class Enemy : MonoBehaviour
     private void Update()
     {
         Gravity();
+        HPPassToUI();
         SearchPlayer();
         Attacking();
-        HPPassToUI();
     }
 
     private void Gravity()
@@ -91,7 +88,7 @@ public class Enemy : MonoBehaviour
     /// </summary>
     private void SearchPlayer()
     {
-        if (isHitting || isAttacking) { return; } //피격중 혹은 공격중일 경우 리턴
+        if (isHitting || isAttacking || isDie) { return; } //피격중 혹은 공격중일 경우 혹은 사망할 경우 리턴
 
         GameObject player = GameObject.FindGameObjectWithTag("Player"); //플레이어 탐색
         
@@ -158,6 +155,7 @@ public class Enemy : MonoBehaviour
     /// </summary>
     private void HPPassToUI()
     {
+        if (objHPImage == null) { return; } //오브젝트가 비어있으면 리턴
         EnemyHP sc = objHPImage.GetComponent<EnemyHP>();
         sc.P_CurrectEnemyInformation(curHP, setHP, objHPUIPositionY, transform);
     }
@@ -179,7 +177,7 @@ public class Enemy : MonoBehaviour
         //    isTimer = false; //타이머 중지
         //}
 
-        if (!attackAble) { return; }
+        if (!attackAble || isDie) { return; }
 
         if (goAttack)
         {
@@ -191,13 +189,39 @@ public class Enemy : MonoBehaviour
     /// <summary>
     /// 피격 판정
     /// </summary>
-    private void Hit()
+    public void P_Hit(float _attackPoint)
     {
-        Debug.Log("맞았습니다!");
-        isAttacking = false; //공격 캔슬 판정을 받아야 함
+        if (isDie) { return; }
 
-        if (isBoss) { return; } //보스 몬스터일 경우 리턴
+        isAttacking = false; //공격 캔슬 판정을 받아야 함
+        curHP -= _attackPoint;
+
+        EnemyAnimation sc = GetComponent<EnemyAnimation>();
+        sc.P_SetPlay_Hit();
+
+        if (curHP <= 0f) //체력이 0이하가 되면
+        {
+            Die();
+            return;
+        }
+
         StartCoroutine(C_SetIsHitting());
+    
+        if (isBoss) { return; } //보스 몬스터일 경우 리턴
+    }
+
+    private void Die()
+    {
+        enemyAnimation.P_SetPlay_Die();
+        Destroy(objHPImage); 
+        isDie = true;
+        Invoke("DieAfterDestroyEnemy", 2f);
+        //controller.enabled = false;
+    }
+
+    private void DieAfterDestroyEnemy()
+    {
+        Destroy(gameObject);
     }
 
     /// <summary>
@@ -218,9 +242,25 @@ public class Enemy : MonoBehaviour
         goAttack = true; //공격 발사 가능 상태
     }
 
+    /// <summary>
+    /// 공격 판정을 넣을 트리거를 실행시켜주는 함수
+    /// -애니메이션에 코루틴을 넣어서 실행
+    /// </summary>
+    private IEnumerator AC_AttackTrigger()
+    {
+        attackTrigger.enabled = true; //공격 트리거 활성화하여 공격하기
+        yield return waitTime;
+        attackTrigger.enabled = false; //공격 트리거 비활성화하여 공격막기
+    }
+
     public void P_SetIsAttacking(bool _isAttacking)
     {
         isAttacking = _isAttacking;
+    }
+
+    public float P_GetAttackPoint()
+    {
+        return attackPoint;
     }
 
     public bool P_GetIsAttacking()

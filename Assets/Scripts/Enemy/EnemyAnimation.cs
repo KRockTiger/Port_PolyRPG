@@ -11,6 +11,7 @@ public class EnemyAnimation : MonoBehaviour
     [SerializeField] private string hitting;
     [SerializeField] private string moving;
     [SerializeField] private string attack;
+    [SerializeField] private string die;
 
     private void Awake()
     {
@@ -71,14 +72,18 @@ public class EnemyAnimation : MonoBehaviour
         enemy.P_SetIsAttacking(false);
     }
 
-    public void P_SetTrigger_Hit()
+    public void P_SetPlay_Hit()
     {
-        //animator.SetTrigger(hit);
         animator.Play(hit);
     }
 
     public void P_GoAttack()
     {
         animator.SetTrigger(attack);
+    }
+
+    public void P_SetPlay_Die()
+    {
+        animator.Play(die);
     }
 }

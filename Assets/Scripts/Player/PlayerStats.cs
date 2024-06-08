@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
+using TMPro;
 
 /// <summary>
 /// 모든 씬에서 스텟은 공유를 하기 때문에 싱글톤으로 설정함
@@ -28,10 +29,22 @@ public class PlayerStats : MonoBehaviour
     [Header("UI표기")]
     [SerializeField] private GameObject objDashCounts; //이미지 부모 오브젝트
     [SerializeField] private Image[] imgDashCounts; //위의 자식 오브젝트들을 담을 배열 변수
-    //
     [SerializeField] private GameObject[] objDashCount; //위의 자식 오브젝트들을 담을 배열 변수
     [SerializeField] private Image fillDashImg;
     [SerializeField] private int maxDashCount = 5;
+
+    [Header("임의로 저장하는 스탯UI")]
+    [SerializeField] private TMP_Text setAttackText;
+    [SerializeField] private TMP_Text weaponAttackText;
+    [SerializeField] private TMP_Text curAttackText;
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "Attack")
+        {
+            
+        }
+    }
 
     private void Awake()
     {
@@ -58,6 +71,7 @@ public class PlayerStats : MonoBehaviour
     private void Update()
     {
         CheckDashCount();
+        StatUI();
     }
 
     /// <summary>
@@ -115,6 +129,13 @@ public class PlayerStats : MonoBehaviour
         }
     }
 
+    private void StatUI()
+    {
+        setAttackText.text = "기본 공격력\n" + setAttackPoint.ToString();
+        weaponAttackText.text = "무기 공격력\n" + weaponAttackPoint.ToString();
+        curAttackText.text = "현재 공격력\n" + curAttackPoint.ToString();
+    }
+
     /// <summary>
     /// 대쉬 카운트가 일정 시간마다 바뀌어지면 사용되는 함수
     /// </summary>
@@ -142,6 +163,11 @@ public class PlayerStats : MonoBehaviour
         return dashCount;
     }
 
+    public float P_GetAttackPoint()
+    {
+        return curAttackPoint;
+    }
+
     public void P_SetWeaponAttackPoint(float _weaponAttackPoint)
     {
         weaponAttackPoint = _weaponAttackPoint; //장비 슬롯 무기의 공격력을 가져옴
@@ -160,5 +186,13 @@ public class PlayerStats : MonoBehaviour
         {
             curHP = maxHP; //최대 체력으로 설정
         }
+    }
+
+    /// <summary>
+    /// 플레이어가 피격 받았을 때 사용
+    /// </summary>
+    public void P_Hit(float _damage)
+    {
+        curHP -= _damage;
     }
 }
