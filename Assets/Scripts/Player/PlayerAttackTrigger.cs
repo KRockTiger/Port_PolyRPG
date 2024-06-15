@@ -11,7 +11,7 @@ public class PlayerAttackTrigger : MonoBehaviour
         if (other.tag == "Enemy")
         {
             Enemy sc = other.GetComponent<Enemy>();
-            sc.P_Hit(playerStats.P_GetAttackPoint());
+            sc.P_Hit(playerStats.P_GetAttackPoint(), playerStats.P_GetPiercePoint(), playerStats.P_GetPiercePercent());
         }
     }
 }

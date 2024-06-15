@@ -21,6 +21,9 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private float setAttackPoint; //설정할 캐릭터 공격력
     [SerializeField] private float curAttackPoint; //현재 캐릭터 공격력
     [SerializeField] private float weaponAttackPoint; //추가되는 무기 공격력
+    [SerializeField] private float defendPoint; //방어력
+    [SerializeField] private float piercePoint; //관통력
+    [SerializeField, Range(0, 1)] private float piercePercent; //관통률 ==> 퍼센트 값이므로 0 ~ 1의 값으로 나와야함
     [SerializeField] private float setDashCoolTime; //설정한 대쉬 쿨타임
     [SerializeField] private float curDashCoolTime; //현재 대쉬 쿨타임
     [SerializeField, Range(0,5)] private int dashCount; //차감하여 대쉬 쓰게하는 대쉬 카운트
@@ -166,6 +169,16 @@ public class PlayerStats : MonoBehaviour
     public float P_GetAttackPoint()
     {
         return curAttackPoint;
+    }
+
+    public float P_GetPiercePoint()
+    {
+        return piercePoint;
+    }
+
+    public float P_GetPiercePercent()
+    {
+        return piercePercent;
     }
 
     public void P_SetWeaponAttackPoint(float _weaponAttackPoint)

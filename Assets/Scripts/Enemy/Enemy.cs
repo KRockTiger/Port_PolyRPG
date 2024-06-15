@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEditor.EditorTools;
 using UnityEngine;
 
@@ -24,9 +25,16 @@ public class Enemy : MonoBehaviour
     [SerializeField] private Transform groundChecker; //발이 땅에 닿았는 지를 판단할 Transform
     [SerializeField] private float groundDistance; //발과 땅과의 거리
     [SerializeField] private LayerMask groundMask; //바닥판정을 받을 레이어마스크
+
+    [Header("오브젝트 관리")]
     [SerializeField] private GameObject prfHPImage; //체력바 이미지 프리팹
     [SerializeField] private GameObject objHPImage; //체력바 이미지 오브젝트
+    [SerializeField] private GameObject objDamageUI; //데미지 UI 프리팹
     [SerializeField] private BoxCollider attackTrigger; //공격 트리거
+
+    [Header("오브젝트 위치 설정")]
+    [SerializeField, Range(0, 5)] private float objHPUIPositionY; //체력바 위치를 정하기 위해 넘길 값
+    [SerializeField, Range(0, 5)] private float objDamageUIPositionY; //데미지 오브젝트 위치를 정하기 위해 넘길 값
 
     [Header("캐릭터 설정")]
     [SerializeField] private float setHP; //설정할 체력
@@ -44,9 +52,6 @@ public class Enemy : MonoBehaviour
     [SerializeField] private bool isDie; //캐릭터 사망 처리
    
     private WaitForSeconds waitTime = new WaitForSeconds(0.5f); //공격 대기 시간
-
-    [Header("체력바 설정")]
-    [SerializeField, Range(0, 5)] private float objHPUIPositionY; //체력바 위치를 정하기 위해 넘길 값
 
     private void Awake()
     {
@@ -68,6 +73,12 @@ public class Enemy : MonoBehaviour
         HPPassToUI();
         SearchPlayer();
         Attacking();
+
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            Instantiate(objDamageUI, transform.position + new Vector3(0, objDamageUIPositionY, 0),
+                        Quaternion.identity, gameObject.transform);
+        }
     }
 
     private void Gravity()
@@ -189,15 +200,36 @@ public class Enemy : MonoBehaviour
     /// <summary>
     /// 피격 판정
     /// </summary>
-    public void P_Hit(float _attackPoint)
+    /// <param 공격력="_attackPoint"></param>
+    /// <param 관통력="_piercePoint"></param>
+    /// <param 관통률="_piercePercent"></param>
+    public void P_Hit(float _attackPoint, float _piercePoint, float _piercePercent)
     {
         if (isDie) { return; }
 
         isAttacking = false; //공격 캔슬 판정을 받아야 함
-        curHP -= _attackPoint;
+        //curHP -= _attackPoint;
+
+        //피해량 = 100 / (100 + 방어력 - (방어력 + 상대 관통률 + 상대 관통력)) * 상대 공격력
+        float damage =  100 / (100 + defendPoint - (defendPoint * _piercePercent + _piercePoint)) * _attackPoint;
+        
+        GameObject obj = Instantiate(objDamageUI, transform.position + new Vector3(0, objDamageUIPositionY, 0),
+                         Quaternion.identity, gameObject.transform);
+        
+        int dmgToInt = Mathf.FloorToInt(damage); //받은 데미지에서 int형 변환하면서 소수점 버리기
+
+        TMP_Text txtDamage = obj.GetComponent<TMP_Text>(); //생성한 오브젝트에 텍스트 컴포넌트 연결
+        txtDamage.text = dmgToInt.ToString(); //계산된 데미지 값을 텍스트로 표시
+
+        Debug.Log($"피해량 : {damage}");
+        //curHP -= damage;
 
         EnemyAnimation sc = GetComponent<EnemyAnimation>();
-        sc.P_SetPlay_Hit();
+
+        if (!isBoss) //보스 몬스터가 아닌 경우 => 보스는 피격 모션 구현 X
+        {
+            sc.P_SetPlay_Hit();
+        }
 
         if (curHP <= 0f) //체력이 0이하가 되면
         {
