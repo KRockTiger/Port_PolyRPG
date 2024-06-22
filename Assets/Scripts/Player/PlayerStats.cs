@@ -207,5 +207,18 @@ public class PlayerStats : MonoBehaviour
     public void P_Hit(float _damage)
     {
         curHP -= _damage;
+
+        if (curHP <= 0f)
+        {
+            Die();
+        }
+    }
+
+    /// <summary>
+    /// Á×À½ ÆÇÁ¤
+    /// </summary>
+    public void Die()
+    {
+
     }
 }

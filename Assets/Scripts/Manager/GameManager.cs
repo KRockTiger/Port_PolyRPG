@@ -120,6 +120,28 @@ public class GameManager : MonoBehaviour
             isCursor = false; 
             isPause = false;
         }
+
+        inventoryExitButton.onClick.RemoveAllListeners(); //람다식에 대해 더 알아보기
+
+        inventoryExitButton.onClick.AddListener(() =>
+        {
+            B_ExitInventory();
+        });
+    }
+
+    private void B_ExitInventory()
+    {
+        inventory.SetActive(false);
+        isCursor = false;
+        isPause = false;
+    }
+
+    private void Menu()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape)) 
+        {
+            
+        }
     }
 }
 #region 게임 빌드 화면 비율 셋팅 예시
