@@ -59,4 +59,25 @@ public class BossAnimation : MonoBehaviour
     {
         boss.P_SetIsCombo(false);
     }
+
+    /// <summary>
+    /// 보스 스크립트에 등록된 무기 메쉬 콜리더를 true로 설정하여 콜리더 생성
+    /// </summary>
+    public void A_OnWeaponCollider()
+    {
+        boss.P_SetWeaponCollider(true);
+    }
+
+    /// <summary>
+    /// 반대로 무기 메쉬 콜리더를 false로 설정하여 콜리더 제거
+    /// </summary>
+    public void A_OffWeaponCollider()
+    {
+        boss.P_SetWeaponCollider(false);
+    }
+
+    public void A_SetChopTrigger()
+    {
+        StartCoroutine(boss.PC_SetChopTrigger());
+    }
 }

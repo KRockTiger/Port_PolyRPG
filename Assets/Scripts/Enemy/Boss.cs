@@ -29,6 +29,7 @@ public class Boss : MonoBehaviour
     [SerializeField] private GameObject objHPImage; //체력바 이미지 오브젝트
     [SerializeField] private GameObject objDamageUI; //데미지 UI 프리팹
     [SerializeField] private BoxCollider attackTrigger; //공격 트리거
+    [SerializeField] private MeshCollider weaponCollider; //무기 메쉬 콜리더
 
     [Header("오브젝트 위치 설정")]
     [SerializeField, Range(0, 5)] private float objHPUIPositionY; //체력바 위치를 정하기 위해 넘길 값
@@ -49,7 +50,11 @@ public class Boss : MonoBehaviour
     [SerializeField] private bool isTimer; //타이머 조절용
     [SerializeField] private bool isDie; //캐릭터 사망 처리
 
+    [Header("보스 패턴 설정")]
+    [SerializeField] private List<BossPattern> patterns;
+
     private WaitForSeconds waitTime = new WaitForSeconds(0.5f); //공격 대기 시간
+    private WaitForSeconds setTriggerTime = new WaitForSeconds(0.1f); //트리거 활성화 시간
 
     private void Awake()
     {
@@ -95,9 +100,11 @@ public class Boss : MonoBehaviour
     /// </summary>
     private void SearchPlayer()
     {
-        if (isHitting || isAttacking || isDie) { return; } //피격중 혹은 공격중일 경우 혹은 사망할 경우 리턴
+        if (isHitting || isAttacking || isDie || isTest) { return; } //피격중 혹은 공격중일 경우 혹은 사망할 경우 리턴
 
         GameObject player = GameObject.FindGameObjectWithTag("Player"); //플레이어 탐색
+
+        if (player == null) { return; }
 
         //플레이어와의 거리 측정
         float distance = Vector3.Distance(player.transform.position, transform.position);
@@ -171,5 +178,21 @@ public class Boss : MonoBehaviour
     public void P_SetIsCombo(bool _isCombo)
     {
         isCombo = _isCombo;
+    }
+
+    /// <summary>
+    /// 무기 콜리더의 활성화를 결정하는 public 함수
+    /// </summary>
+    /// <param name="_isCollider"></param>
+    public void P_SetWeaponCollider(bool _isCollider)
+    {
+        weaponCollider.enabled = _isCollider;
+    }
+
+    public IEnumerator PC_SetChopTrigger()
+    {
+        patterns[0].attackTrigger.SetActive(true);
+        yield return setTriggerTime;
+        patterns[0].attackTrigger.SetActive(false);
     }
 }

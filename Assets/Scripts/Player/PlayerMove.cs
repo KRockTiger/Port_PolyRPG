@@ -21,12 +21,15 @@ public class PlayerMove : MonoBehaviour
     [SerializeField] private float dashSpeed; //대쉬 속도
     [SerializeField] private float setDashTime; //설정할 대쉬 시간
     [SerializeField] private float curDashTime; //현재 대쉬 시간
+    [SerializeField] private float setGroggyTime; //설정할 그로기 시간
+    [SerializeField] private float curGroggyTime; //현재 그로기 시간
     [SerializeField] private float jumpForce; //캐릭터 점프력
     [SerializeField] private float floatCheckGround; //캐릭터 점프력
     private float turnSpeed; //회전 속도
     [SerializeField] private bool isMoving = true; //캐릭터 무빙 가능 여부
     [SerializeField] private bool isAttacking = false; //공격중일 때 이동을 막기 위한 트리거
     [SerializeField] private bool isDash = false; //대쉬 기능 사용
+    [SerializeField] private bool isGroggy = false; //플레이어의 그로기 상태 확인
     
     [Header("중력 설정")]
     private float gravity = -9.81f; //중력 값
@@ -61,6 +64,7 @@ public class PlayerMove : MonoBehaviour
         Dash();
         Jump();
         Gravity();
+        Groggy();
     }
 
     /// <summary>
@@ -108,9 +112,10 @@ public class PlayerMove : MonoBehaviour
     /// </summary>
     private void Moving()
     {
-        if (isDash) { return; } //03.18) 공격 중일 경우 이동을 막아 놓지만 입력을 통하여 대쉬 방향을 정해야하므로
-                                //       대쉬 중일 경우에만 입력을 막아놓는다.
-        
+        if (isDash || isGroggy) { return; } //03.18) 공격 중일 경우 이동을 막아 놓지만 입력을 통하여 대쉬 방향을 정해야하므로
+                                            //       대쉬 중일 경우에만 입력을 막아놓는다.
+                                            //07.13) 특정 상황으로 플레이어가 그로기 상태에 당할 경우 막기
+
         moveHorizontal = Input.GetAxisRaw("Horizontal");
         moveVertical = Input.GetAxisRaw("Vertical");
 
@@ -259,6 +264,14 @@ public class PlayerMove : MonoBehaviour
         controller.Move(velocity * Time.deltaTime);
     }
 
+    /// <summary>
+    /// 플레이어가 그로기 상태에 당할 경우 일정 시간이 지나면 바로 회복
+    /// </summary>
+    private void Groggy()
+    {
+        if (!isGroggy) { return; } //그로기 상태가 아닐 경우 중지
+    }
+
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
@@ -277,6 +290,24 @@ public class PlayerMove : MonoBehaviour
     public void P_SetIsMoving(bool _isMoving)
     {
         isMoving = _isMoving;
+    }
+
+    /// <summary>
+    /// 외부로부터 그로기 상태 받기
+    /// </summary>
+    public void P_SetGroggy()
+    {
+        isGroggy = true;
+    }
+
+    /// <summary>
+    /// 보스의 공격으로 공중으로 튕겨질 때 사용
+    /// </summary>
+    public void P_SetBounce()
+    {
+        //isGroggy = true; //공격 받은 후 그로기 상태 돌입
+        Debug.Log("바운스 상태 적용");
+        velocity.y = Mathf.Sqrt(-2 * gravity);
     }
 
     /// <summary>
