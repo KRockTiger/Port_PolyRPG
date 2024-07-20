@@ -19,6 +19,7 @@ public class PlayerMove : MonoBehaviour
     [Header("캐릭터 움직임 설정")]
     [SerializeField] private float moveSpeed; //이동 속도
     [SerializeField] private float dashSpeed; //대쉬 속도
+    [SerializeField] private float rollingSpeed; //구르기 속도
     [SerializeField] private float setDashTime; //설정할 대쉬 시간
     [SerializeField] private float curDashTime; //현재 대쉬 시간
     [SerializeField] private float setGroggyTime; //설정할 그로기 시간
@@ -29,8 +30,11 @@ public class PlayerMove : MonoBehaviour
     [SerializeField] private bool isMoving = true; //캐릭터 무빙 가능 여부
     [SerializeField] private bool isAttacking = false; //공격중일 때 이동을 막기 위한 트리거
     [SerializeField] private bool isDash = false; //대쉬 기능 사용
+    [SerializeField] private bool isRoll = false; //플레이어의 구르기 확인
+    [SerializeField] private bool isRolling = false; //GetUp상태일 때 사용할 수 있는 대쉬 => 단 쿨타임은 길다
+                                                     //true일 때 대쉬 사용 가능
     [SerializeField] private bool isGroggy = false; //플레이어의 그로기 상태 확인
-    
+
     [Header("중력 설정")]
     private float gravity = -9.81f; //중력 값
     [SerializeField] private Vector3 velocity; //중력을 적용하기 위해 만든 벡터 변수
@@ -64,7 +68,7 @@ public class PlayerMove : MonoBehaviour
         Dash();
         Jump();
         Gravity();
-        Groggy();
+        Rolling();
     }
 
     /// <summary>
@@ -72,7 +76,8 @@ public class PlayerMove : MonoBehaviour
     /// </summary>
     private void InputKey()
     {
-        if (Input.GetKeyDown(KeyCode.Mouse1) && !isDash && isGround) //마우스 오른쪽 버튼으로 사용하고 중복 입력 방지함
+        //마우스 오른쪽 버튼으로 사용하고 중복 입력 방지함
+        if (Input.GetKeyDown(KeyCode.Mouse1) && !isDash && isGround && !isGroggy)
         {
             if (playerStats.P_GetDashCount() <= 0) //만약 대쉬 카운트가 0이하가 되면 리턴
             { return; }
@@ -85,6 +90,12 @@ public class PlayerMove : MonoBehaviour
             //=> 비정상적인 속도로 연속 공격이 실행됨
             playerAttack.P_SetIsAttack(false); //공격 끄기
             playerAttack.P_ReSetAttackCycle(); //횟수 초기화
+        }
+
+        if (Input.GetKeyDown(KeyCode.Mouse1) && isRoll && isGroggy)
+        {
+            //그로기 상태에서 구르기 가능한 상태일 경우 구르기 사용
+            isRolling = true;
         }
     }
 
@@ -100,7 +111,7 @@ public class PlayerMove : MonoBehaviour
 
         //타이머 설정
         curDashTime -= Time.deltaTime;
-        
+
         if (curDashTime <= 0f)
         {
             isDash = false; //타이머가 끝나면서 값 변경
@@ -123,7 +134,7 @@ public class PlayerMove : MonoBehaviour
         //.normalized를 넣어서 대각선 이동이 빨리 가지 않기 위해 막아놓음
 
         //if (isAttacking || isDash) { return; } //공격 중 혹은 대쉬 중일 때 이동을 막아놓음
-        
+
         if (inputDirection.magnitude >= 0.1f) //방향키를 입력할 때 적용할 수 있게 적용
         //이 조건을 넣지 않으면 캐릭터가 안움직일 때 y회전 값이 0으로 고정
         {
@@ -142,7 +153,7 @@ public class PlayerMove : MonoBehaviour
         targetAngle = Mathf.Atan2(_direction.x, _direction.z) * Mathf.Rad2Deg + cam.transform.rotation.eulerAngles.y;
         //※ Mathf.Deg2Rad를 넣으면 작동 안됨 ※
         //cam.transform.rotation.eulerAngles.y를 넣어 카메라의 y회전값을 더해 카메라 방향을 정방향으로 설정
-        
+
         //Euler로 방향을 설정하여 Vector3.forward를 곱하여 정방향을 결정
         //아래 코드를 안적으면 캐릭터 오브젝트만 회전하되 이동은 z축을 정방향으로 고정되어 한 방향으로만 감
         targetDirection = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward; //=> 방향 결정
@@ -219,7 +230,7 @@ public class PlayerMove : MonoBehaviour
             isJump = false; //점프 불가능
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && isJump) //땅 위에 서있는 상태에서 점프키를 누르면
+        if (Input.GetKeyDown(KeyCode.Space) && isJump && !isGroggy) //땅 위에 서있는 상태에서 점프키를 누르면 + 그로기 아닐 경우
         {
             //isJump = true; //점프 트리거 활성화 ==> 03.18) 기능 변경으로 인한 취소
 
@@ -265,11 +276,16 @@ public class PlayerMove : MonoBehaviour
     }
 
     /// <summary>
-    /// 플레이어가 그로기 상태에 당할 경우 일정 시간이 지나면 바로 회복
+    /// 플레이어가 그로기 상태일 경우 롤링 사용 가능
     /// </summary>
-    private void Groggy()
+    private void Rolling()
     {
-        if (!isGroggy) { return; } //그로기 상태가 아닐 경우 중지
+        if (isRolling)
+        {
+            animator.Play("Rolling");
+            transform.rotation = Quaternion.Euler(0f, targetAngle, 0f); //캐릭터 회전
+            controller.Move(targetDirection.normalized * rollingSpeed * Time.deltaTime); //입력한 방향으로 이동
+        }
     }
 
     private void OnDrawGizmos()
@@ -301,13 +317,66 @@ public class PlayerMove : MonoBehaviour
     }
 
     /// <summary>
+    /// 그로기 상태 풀기
+    /// </summary>
+    public void P_UnSetGroggy()
+    {
+        isGroggy = false;
+    }
+
+    /// <summary>
+    /// GetUp상태가 시작될 때 슈퍼 대시 사용할 수 있게 하는 함수
+    /// </summary>
+    public void P_SetOnRoll()
+    {
+        isRoll = true;
+    }
+
+    /// <summary>
+    /// GetUp상태가 끝나면 슈퍼 대시 다시 막는 함수
+    /// </summary>
+    public void P_SetOffRoll()
+    {
+        isRoll = false;
+        isGroggy = false; //슈퍼대쉬는 그로기 상태만 쓸 수 있으므로 같이 적용 시켜주면 좋음
+    }
+
+    /// <summary>
     /// 보스의 공격으로 공중으로 튕겨질 때 사용
     /// </summary>
-    public void P_SetBounce()
+    public void P_SetBounce(float _bounceForce)
     {
         //isGroggy = true; //공격 받은 후 그로기 상태 돌입
         Debug.Log("바운스 상태 적용");
-        velocity.y = Mathf.Sqrt(-2 * gravity);
+        velocity.y = Mathf.Sqrt(-_bounceForce * gravity); //gravity는 음수이므로 음수를 곱해야 바운스가 적용
+    }
+
+    /// <summary>
+    /// 플레이어의 전투 상태를 바로 해제시키는 함수
+    /// -전투 중 플레이어의 조작 혹은 몬스터의 공격으로 전투 상태를 해제시키는 용도로 사용
+    /// </summary>
+    public void P_CompulsionOffBattle()
+    {
+        if (isAttacking || isDash) //공격중 혹은 대쉬중일 때
+        {
+            playerAttack.P_SetIsAttack(false); //공격 중지
+            playerAttack.P_ReSetAttackCycle(); //횟수 초기화
+            isAttacking = false; //공격 캔슬
+            isDash = false; //대쉬 캔슬
+            playerAttack.P_SetIsNext(false);
+            //=> 연속 공격 중 대쉬 혹은 점프로 캔슬 할 경우 isNext가 true로 계속 남게 되어 다음 연속 공격할 때
+            //=> 비정상적인 속도로 연속 공격이 실행됨
+        }
+    }
+
+    /// <summary>
+    /// 캐릭터 구르기 상태 설정
+    /// </summary>
+    public void P_SetEndRolling()
+    {
+        isRoll = false;
+        isRolling = false;
+        isGroggy = false;
     }
 
     /// <summary>

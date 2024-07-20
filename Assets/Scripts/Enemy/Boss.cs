@@ -28,12 +28,16 @@ public class Boss : MonoBehaviour
     [SerializeField] private GameObject prfHPImage; //체력바 이미지 프리팹
     [SerializeField] private GameObject objHPImage; //체력바 이미지 오브젝트
     [SerializeField] private GameObject objDamageUI; //데미지 UI 프리팹
+    [SerializeField] private GameObject objChopTrigger; //찍기 트리거 프리팹
     [SerializeField] private BoxCollider attackTrigger; //공격 트리거
     [SerializeField] private MeshCollider weaponCollider; //무기 메쉬 콜리더
+    [SerializeField] private BoxCollider weaponBoxCollider; //무기 박스 콜리더
+    [SerializeField] private bool useWeaponBoxCollider = false; //무기 콜리더 중 박스 콜리더 사용 유무
 
     [Header("오브젝트 위치 설정")]
     [SerializeField, Range(0, 5)] private float objHPUIPositionY; //체력바 위치를 정하기 위해 넘길 값
     [SerializeField, Range(0, 5)] private float objDamageUIPositionY; //데미지 오브젝트 위치를 정하기 위해 넘길 값
+    [SerializeField] private Transform trsChopTrigger; //찍기 트리거 위치 오브젝트
 
     [Header("캐릭터 설정")]
     [SerializeField] private float setHP; //설정할 체력
@@ -71,7 +75,7 @@ public class Boss : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.P)) //보스 스킬 테스트용 코드이므로 추후 삭제
+        if (Input.GetKeyDown(KeyCode.Q)) //보스 스킬 테스트용 코드이므로 추후 삭제
         {
             ComboAttack();
         }
@@ -186,13 +190,29 @@ public class Boss : MonoBehaviour
     /// <param name="_isCollider"></param>
     public void P_SetWeaponCollider(bool _isCollider)
     {
-        weaponCollider.enabled = _isCollider;
+        if (useWeaponBoxCollider) //만약 박스 콜리더를 사용할 경우 ==> 박스 콜리더가 더 커서 그런지 판정이 더 후함
+        {
+            weaponBoxCollider.enabled = _isCollider;
+        }
+
+        else //메쉬 콜리더를 사용할 경우
+        {
+            weaponCollider.enabled = _isCollider;
+        }
     }
 
-    public IEnumerator PC_SetChopTrigger()
+    //public IEnumerator PC_SetChopTrigger()
+    //{
+    //    patterns[0].attackTrigger.SetActive(true);
+    //    yield return setTriggerTime;
+    //    patterns[0].attackTrigger.SetActive(false);
+    //}
+
+    public void PC_SetChopTrigger()
     {
-        patterns[0].attackTrigger.SetActive(true);
-        yield return setTriggerTime;
-        patterns[0].attackTrigger.SetActive(false);
+        //트리거 프리팹 소환 코드 작성
+        GameObject obj = Instantiate(objChopTrigger, trsChopTrigger.transform.position, Quaternion.identity, transform);
+    
+        Destroy(obj, 0.2f);
     }
 }

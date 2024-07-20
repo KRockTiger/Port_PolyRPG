@@ -11,6 +11,11 @@ public class PlayerAnimation : MonoBehaviour
     [SerializeField] private string dash; //대쉬 파라미터
     [SerializeField] private string attack01; //첫 번째 공격 애니메이션
 
+    [Header("애니메이션 클립 이름")]
+    [SerializeField] private string knockdown; //녹다운 애니메이션 이름
+    [SerializeField] private string rolling; //롤링 애니메이션 이름
+    [SerializeField] private string getHit; //피격 애니메이션 이름
+
     private Animator animator;
     private PlayerMove playerMove; //플레이어 움직임 스크립트
     private PlayerAttack playerAttack; //플레이어의 공격 스크립트
@@ -117,6 +122,26 @@ public class PlayerAnimation : MonoBehaviour
         playerAttack.P_SetAttackCycle();
     }
 
+    private void A_SetOnSRoll()
+    {
+        playerMove.P_SetOnRoll();
+    }
+
+    private void A_SetOffRoll()
+    {
+        playerMove.P_SetOffRoll();
+    }
+
+    private void A_SetEndRolling()
+    {
+        playerMove.P_SetEndRolling();
+    }
+
+    private void A_UnSetGroggy()
+    {
+        playerMove.P_UnSetGroggy();
+    }
+
     /// <summary>
     /// 공격 중단을 막기 위한 코루틴
     /// </summary>
@@ -126,6 +151,22 @@ public class PlayerAnimation : MonoBehaviour
         notEndAttack = true;
         yield return new WaitForSeconds(0.3f);
         notEndAttack = false;
+    }
+
+    /// <summary>
+    /// 플레이어의 녹다운 애니메이션 강제 실행
+    /// </summary>
+    public void PA_PlayKnockdownAnimation()
+    {
+        animator.Play(knockdown);
+    }
+
+    /// <summary>
+    /// 플레이어의 피격 애니메이션 강제 실행
+    /// </summary>
+    public void PA_PlayGetHitAnimation()
+    {
+        animator.Play(getHit);
     }
 
     /// <summary>

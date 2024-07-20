@@ -78,6 +78,7 @@ public class BossAnimation : MonoBehaviour
 
     public void A_SetChopTrigger()
     {
-        StartCoroutine(boss.PC_SetChopTrigger());
+        //StartCoroutine(boss.PC_SetChopTrigger());
+        boss.PC_SetChopTrigger();
     }
 }
