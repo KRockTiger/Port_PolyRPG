@@ -84,7 +84,10 @@ public class PlayerMove : MonoBehaviour
             playerStats.P_UseDashCount();
             curDashTime = setDashTime; //타이머 설정
             isDash = true; //대쉬 사용
-            animator.SetTrigger("DashStart");
+            //animator.SetTrigger("DashStart");
+            //07.27) SetTrigger는 다음 애니메이션을 실행하기 위한 예약기능인데 그로 인해
+            //다른 애니메이션과 충돌하는 모습이 보여서 수정
+            animator.Play("Run");
             playerAttack.P_SetIsNext(false);
             //=> 연속 공격 중 대쉬 혹은 점프로 캔슬 할 경우 isNext가 true로 계속 남게 되어 다음 연속 공격할 때
             //=> 비정상적인 속도로 연속 공격이 실행됨
@@ -96,6 +99,7 @@ public class PlayerMove : MonoBehaviour
         {
             //그로기 상태에서 구르기 가능한 상태일 경우 구르기 사용
             isRolling = true;
+            isRoll = false; //구르기 가능 상태를 false로 하여 중복 입력 방지
         }
     }
 

@@ -9,6 +9,7 @@ public class PlayerAttack : MonoBehaviour
     private Transform targetEnemy; //위치에 따라 공격을 하기 위함으로 Transform을 사용
 
     private PlayerMove playerMove;
+    private Animator animator;
 
     [Header("플레이어 공격 스텟")]
     [SerializeField] private float attackRange; //공격범위
@@ -29,6 +30,7 @@ public class PlayerAttack : MonoBehaviour
     private void Awake()
     {
         playerMove = GetComponent<PlayerMove>();
+        animator = GetComponent<Animator>();
         //attackTrigger.enabled = false;
     }
 
@@ -63,6 +65,7 @@ public class PlayerAttack : MonoBehaviour
 
             if (!isAttack) //공격 중이 아닐 경우(지금 공격이 첫 공격일 경우)
             {
+                animator.Play("Attack01");
                 isAttack = true;
             }
 

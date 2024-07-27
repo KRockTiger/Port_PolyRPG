@@ -69,15 +69,20 @@ public class Boss : MonoBehaviour
 
     private void Start()
     {
-        goAttack = true;
+        //goAttack = true;
         //objHPImage = Instantiate(prfHPImage, gameObject.transform); //현 오브젝트에서 자식으로 생성
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Q)) //보스 스킬 테스트용 코드이므로 추후 삭제
+        if (Input.GetKeyDown(KeyCode.Alpha1)) //보스 스킬 테스트용 코드이므로 추후 삭제
         {
-            ComboAttack();
+            ComboAttack("Combo01");
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha2)) //보스 스킬 테스트용 코드이므로 추후 삭제
+        {
+            ComboAttack("Combo02");
         }
 
         Gravity();
@@ -169,9 +174,14 @@ public class Boss : MonoBehaviour
         controller.Move(targetDirection * moveSpeed * Time.deltaTime);
     }
 
-    private void ComboAttack()
+    /// <summary>
+    /// 보스 몬스터가 콤보 공격을 실행하기 위한 코드
+    /// -매개 변수는 특정 콤보를 확인하기 위해 분리해서 사용하기 위한 수단이므로 추후 수정 필요
+    /// </summary>
+    /// <param name="_comboName"></param>
+    private void ComboAttack(string _comboName)
     {
-        bossAnimation.P_AnimPlayComboAttack();
+        bossAnimation.P_AnimPlayComboAttack(_comboName);
     }
 
     public bool P_GetIsChase()

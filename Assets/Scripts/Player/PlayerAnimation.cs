@@ -15,6 +15,7 @@ public class PlayerAnimation : MonoBehaviour
     [SerializeField] private string knockdown; //녹다운 애니메이션 이름
     [SerializeField] private string rolling; //롤링 애니메이션 이름
     [SerializeField] private string getHit; //피격 애니메이션 이름
+    [SerializeField] private string run; //대쉬 애니메이션 이름
 
     private Animator animator;
     private PlayerMove playerMove; //플레이어 움직임 스크립트
@@ -166,6 +167,13 @@ public class PlayerAnimation : MonoBehaviour
     /// </summary>
     public void PA_PlayGetHitAnimation()
     {
+        animator.Play(getHit);
+    }
+    public void PA_PlayGetHitAnimation(Vector3 attackerPos)
+    {
+        float angle = Quaternion.FromToRotation(Vector3.forward, attackerPos - transform.position).eulerAngles.y;
+
+        transform.rotation = Quaternion.Euler(0, angle, 0);
         animator.Play(getHit);
     }
 

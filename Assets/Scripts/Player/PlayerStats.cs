@@ -13,6 +13,11 @@ public class PlayerStats : MonoBehaviour
 {
     public PlayerStats Instance; //싱글톤으로 설정
 
+    private PlayerMove playerMove;
+    private PlayerAttack playerAttack;
+    private PlayerAnimation playerAnimation;
+
+    [Header("플레이어 스탯")]
     [SerializeField] private float setHP; //초기 체력 설정
     [SerializeField] private float curHP; //현재 체력
     [SerializeField] private float maxHP; //최대 체력
@@ -28,8 +33,10 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private float curDashCoolTime; //현재 대쉬 쿨타임
     [SerializeField, Range(0,5)] private int dashCount; //차감하여 대쉬 쓰게하는 대쉬 카운트
     private int beforeDashCount;
+    private bool isDie = false; //플레이어 사망 상태
 
     [Header("UI표기")]
+    [SerializeField] private GameObject playerHPUI; //플레이어 체력 UI
     [SerializeField] private GameObject objDashCounts; //이미지 부모 오브젝트
     [SerializeField] private Image[] imgDashCounts; //위의 자식 오브젝트들을 담을 배열 변수
     [SerializeField] private GameObject[] objDashCount; //위의 자식 오브젝트들을 담을 배열 변수
@@ -41,13 +48,6 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private TMP_Text weaponAttackText;
     [SerializeField] private TMP_Text curAttackText;
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.tag == "Attack")
-        {
-            
-        }
-    }
 
     private void Awake()
     {
@@ -64,6 +64,9 @@ public class PlayerStats : MonoBehaviour
         dashCount = 5;
         curHP = setHP;
         curAttackPoint = setAttackPoint;
+        playerMove = GetComponent<PlayerMove>();
+        playerAttack = GetComponent<PlayerAttack>();
+        playerAnimation = GetComponent<PlayerAnimation>();
     }
 
     private void Start()
@@ -204,9 +207,17 @@ public class PlayerStats : MonoBehaviour
     /// <summary>
     /// 플레이어가 피격 받았을 때 사용
     /// </summary>
-    public void P_Hit(float _damage)
+    public void P_Hit(float _attackPoint, float _piercePoint, float _piercePercent)
     {
-        curHP -= _damage;
+        if (isDie) { return; } //사망 상태일 경우 피격 판정 막기
+
+        //모든 모션 캔슬 코드 입력 (PlayerMove 스크립트에 간섭해보기)
+        playerMove.P_CompulsionOffBattle(); //모션 캔슬
+        playerAnimation.PA_PlayGetHitAnimation(); //피격 모션 강제 실행
+
+        //피해량 = 100 / (100 + 방어력 - (방어력 + 상대 관통률 + 상대 관통력)) * 상대 공격력
+        float damage = 100 / (100 + defendPoint - (defendPoint * _piercePercent + _piercePoint)) * _attackPoint;
+        Debug.Log($"받는 데미지량 : {damage}");
 
         if (curHP <= 0f)
         {
@@ -219,6 +230,6 @@ public class PlayerStats : MonoBehaviour
     /// </summary>
     public void Die()
     {
-
+        isDie = true; //사망 상태로 전환
     }
 }

@@ -41,6 +41,8 @@ public class Enemy : MonoBehaviour
     [SerializeField] private float curHP; //현재 체력
     [SerializeField] private float attackPoint; //공격력
     [SerializeField] private float defendPoint; //방어력
+    [SerializeField] private float piercePoint; //관통력
+    [SerializeField, Range(0, 1)] private float piercePercent; //관통률
     [SerializeField] private float moveSpeed; //이동 속도
     [SerializeField] private float startSearchRange; //탐색 범위
     [SerializeField] private float endSearchRange; //탐색 중단 범위
@@ -223,6 +225,7 @@ public class Enemy : MonoBehaviour
 
         Debug.Log($"피해량 : {damage}");
         //curHP -= damage;
+        curHP -= dmgToInt;
 
         EnemyAnimation sc = GetComponent<EnemyAnimation>();
 
@@ -293,6 +296,16 @@ public class Enemy : MonoBehaviour
     public float P_GetAttackPoint()
     {
         return attackPoint;
+    }
+
+    public float P_GetPiercePoint()
+    {
+        return piercePoint;
+    }
+
+    public float P_GetPiercePercent()
+    {
+        return piercePercent;
     }
 
     public bool P_GetIsAttacking()

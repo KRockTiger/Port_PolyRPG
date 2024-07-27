@@ -11,8 +11,10 @@ public class EnemyAttackTrigger : MonoBehaviour
         if (other.tag == "Player")
         {
             PlayerStats sc = other.GetComponent<PlayerStats>();
-            float damage = enemy.P_GetAttackPoint();
-            sc.P_Hit(damage); //몬스터의 공격력을 가져옴
+            float attackPoint = enemy.P_GetAttackPoint();
+            float piercePoint = enemy.P_GetPiercePoint();
+            float piercePercent = enemy.P_GetPiercePercent();
+            sc.P_Hit(attackPoint, piercePoint, piercePercent); //몬스터의 공격력을 가져옴, 임시로 숫자를 넣은 상태
         }
     }
 

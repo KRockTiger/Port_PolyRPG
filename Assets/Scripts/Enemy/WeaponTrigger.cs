@@ -12,9 +12,20 @@ public class WeaponTrigger : MonoBehaviour
             Debug.Log("공격에 맞았습니다.");
             PlayerMove scMove = other.GetComponent<PlayerMove>();
             PlayerAnimation scAnimation = other.GetComponent<PlayerAnimation>();
-            scAnimation.PA_PlayGetHitAnimation(); //플레이어 피격 애니메이션 강제 실행
+            scAnimation.PA_PlayGetHitAnimation(transform.position); //플레이어 피격 애니메이션 강제 실행
             scMove.P_SetGroggy();
-            scMove.P_CompulsionOffBattle(); //플레이어 전투 모션 해제
+            scMove.P_CompulsionOffBattle(); //플레이어 전투 모션 해제            
+        }
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            Transform trsEnemy = transform.GetComponentInParent<Transform>();
+            Vector3 trsPosition = trsEnemy.position;
+
+            Debug.Log(trsPosition);
         }
     }
 }

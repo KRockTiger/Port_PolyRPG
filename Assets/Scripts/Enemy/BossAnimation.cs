@@ -8,6 +8,7 @@ public class BossAnimation : MonoBehaviour
     private Animator animator;
 
     [SerializeField] private string moving;
+    [SerializeField] private List<bool> testCombos; //콤보 스킬을 테스트 하기 위한 리스트
 
     [SerializeField] private List<string> listComboAttacks;
 
@@ -40,14 +41,15 @@ public class BossAnimation : MonoBehaviour
 
     /// <summary>
     /// 임의의 번호를 지정하여 콤보 스킬 결정하기
+    /// -매개 변수는 특정 콤보를 확인하기 위해 분리해서 사용하기 위한 수단이므로 추후 수정 필요
     /// </summary>
-    public void P_AnimPlayComboAttack()
+    public void P_AnimPlayComboAttack(string _comboName)
     {
         int randNum = Random.Range(0, listComboAttacks.Count); //리스트에 등록된 콤보 스킬 수로 결정
 
         string combo = listComboAttacks[randNum]; //임의의 번호를 정하여 콤보로 쓸 스킬 애니메이션 이름 결정
 
-        animator.Play("Combo01"); //플레이
+        animator.Play(_comboName); //플레이
     }
 
     public void A_OnIsCombo()
