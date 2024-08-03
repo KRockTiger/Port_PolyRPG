@@ -44,6 +44,8 @@ public class Boss : MonoBehaviour
     [SerializeField] private float curHP; //현재 체력
     [SerializeField] private float attackPoint; //공격력
     [SerializeField] private float defendPoint; //방어력
+    [SerializeField] private float piercePoint; //관통력
+    [SerializeField, Range(0, 1)] private float piercePercent; //관통률
     [SerializeField] private float moveSpeed; //이동 속도
     [SerializeField] private float startSearchRange; //탐색 범위
     [SerializeField] private float endSearchRange; //탐색 중단 범위
@@ -52,6 +54,7 @@ public class Boss : MonoBehaviour
     [SerializeField] private float curAttackTimer; //현재 공격 타이머
     [SerializeField] private bool goAttack; //공격 발사 가능 상태
     [SerializeField] private bool isTimer; //타이머 조절용
+    [SerializeField] private bool isWaitting; //전투 대기 상태
     [SerializeField] private bool isDie; //캐릭터 사망 처리
 
     [Header("보스 패턴 설정")]
@@ -75,6 +78,16 @@ public class Boss : MonoBehaviour
 
     private void Update()
     {
+        Test();
+        Gravity();
+
+        if (isTest) { return; }
+        //SearchPlayer();
+        BossBattle();
+    }
+
+    private void Test()
+    {
         if (Input.GetKeyDown(KeyCode.Alpha1)) //보스 스킬 테스트용 코드이므로 추후 삭제
         {
             ComboAttack("Combo01");
@@ -84,11 +97,6 @@ public class Boss : MonoBehaviour
         {
             ComboAttack("Combo02");
         }
-
-        Gravity();
-
-        if (isTest) { return; }
-        SearchPlayer();
     }
 
     private void Gravity()
@@ -106,14 +114,16 @@ public class Boss : MonoBehaviour
 
     /// <summary>
     /// 플레이어 탐색
+    /// 08.03) 보스가 전투 태세에 돌입하면 항상 플레이어를 추적 및 공격을 하므로
+    ///        플레이어의 거리에 따라 추적을 하는 현 함수와 맞지 않다고 판단하여 보스 몬스터에 맞는 코드로 재설계 예정
     /// </summary>
     private void SearchPlayer()
     {
-        if (isHitting || isAttacking || isDie || isTest) { return; } //피격중 혹은 공격중일 경우 혹은 사망할 경우 리턴
+        if ( isWaitting || isAttacking || isDie) { return; } //대기중 혹은 공격중일 경우 혹은 사망할 경우 리턴
 
         GameObject player = GameObject.FindGameObjectWithTag("Player"); //플레이어 탐색
 
-        if (player == null) { return; }
+        if (player == null) { return; } //만약 플레이어를 찾지 못했다면 리턴
 
         //플레이어와의 거리 측정
         float distance = Vector3.Distance(player.transform.position, transform.position);
@@ -126,7 +136,7 @@ public class Boss : MonoBehaviour
             if (distance <= attackRange) //공격 범위보다 가깝다면
             {
                 attackAble = true; //전투 상태 전환
-                //ComboAttack();
+                ComboAttack();
             }
 
             else //공격 범위보다 멀면
@@ -144,6 +154,39 @@ public class Boss : MonoBehaviour
         }
 
         ChasePlayer(player);
+    }
+
+    /// <summary>
+    /// 보스가 전투 상태일 경우 사용되는 함수
+    /// </summary>
+    private void BossBattle()
+    {
+        if (isWaitting) { return; } //전투 대기 상태일 경우 리턴
+
+        GameObject player = GameObject.FindGameObjectWithTag("Player"); //플레이어 탐색
+
+        if (player == null) { return; } //만약 플레이어를 찾지 못했다면 리턴
+
+        ChasePlayer(player); //플레이어 추적
+
+        if (!isCombo) //콤보 상태가 아니라면 플레이어를 추적
+        {
+            isChase = true; //추적하기
+
+            float distance = Vector3.Distance(player.transform.position, transform.position);
+        
+            if (distance <= attackRange) //플레이어가 공격 사거리 안에 들어갈 경우
+            {
+                //콤보 공격이 끝나면 바로 다음 공격이 실행되는데 그 전에 보스가 플레이어를 바라보기 전에 실행되므로
+                //살짝 대기시간을 가져서 자연스럽게 보스가 플레이어를 바라볼 수 있게끔 수정
+                ComboAttack();
+            }
+        }
+
+        else //콤보 공격 중일 경우
+        {
+            isChase = false; //추적 멈추기
+        }
     }
 
     /// <summary>
@@ -184,6 +227,16 @@ public class Boss : MonoBehaviour
         bossAnimation.P_AnimPlayComboAttack(_comboName);
     }
 
+    private void ComboAttack()
+    {
+        bossAnimation.P_AnimPlayComboAttack();
+    }
+
+    public (float, float, float) P_GetStats()
+    {
+        return (attackPoint, piercePoint, piercePercent);
+    }
+
     public bool P_GetIsChase()
     {
         return isChase;
@@ -210,13 +263,6 @@ public class Boss : MonoBehaviour
             weaponCollider.enabled = _isCollider;
         }
     }
-
-    //public IEnumerator PC_SetChopTrigger()
-    //{
-    //    patterns[0].attackTrigger.SetActive(true);
-    //    yield return setTriggerTime;
-    //    patterns[0].attackTrigger.SetActive(false);
-    //}
 
     public void PC_SetChopTrigger()
     {

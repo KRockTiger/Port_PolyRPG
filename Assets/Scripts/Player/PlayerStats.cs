@@ -1,8 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.UI;
 using TMPro;
 
@@ -63,6 +61,7 @@ public class PlayerStats : MonoBehaviour
 
         dashCount = 5;
         curHP = setHP;
+        maxHP = setHP;
         curAttackPoint = setAttackPoint;
         playerMove = GetComponent<PlayerMove>();
         playerAttack = GetComponent<PlayerAttack>();
@@ -213,7 +212,7 @@ public class PlayerStats : MonoBehaviour
 
         //모든 모션 캔슬 코드 입력 (PlayerMove 스크립트에 간섭해보기)
         playerMove.P_CompulsionOffBattle(); //모션 캔슬
-        playerAnimation.PA_PlayGetHitAnimation(); //피격 모션 강제 실행
+        //playerAnimation.PA_PlayGetHitAnimation(transform.position); //피격 모션 강제 실행
 
         //피해량 = 100 / (100 + 방어력 - (방어력 + 상대 관통률 + 상대 관통력)) * 상대 공격력
         float damage = 100 / (100 + defendPoint - (defendPoint * _piercePercent + _piercePoint)) * _attackPoint;
@@ -231,5 +230,15 @@ public class PlayerStats : MonoBehaviour
     public void Die()
     {
         isDie = true; //사망 상태로 전환
+    }
+
+    /// <summary>
+    /// 체력바의 상태를 나타내기 위한 체력 텍스트
+    /// -(현재 체력 / 최대 체력)으로 구성
+    /// </summary>
+    /// <returns></returns>
+    public (float, float) P_GetHPStats()
+    {
+        return (curHP, maxHP);
     }
 }

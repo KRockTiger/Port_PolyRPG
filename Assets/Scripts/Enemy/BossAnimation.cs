@@ -52,6 +52,15 @@ public class BossAnimation : MonoBehaviour
         animator.Play(_comboName); //플레이
     }
 
+    public void P_AnimPlayComboAttack()
+    {
+        int randNum = Random.Range(0, listComboAttacks.Count); //리스트에 등록된 콤보 스킬 수로 결정
+
+        string combo = listComboAttacks[randNum]; //임의의 번호를 정하여 콤보로 쓸 스킬 애니메이션 이름 결정
+
+        animator.Play(combo); //플레이
+    }
+
     public void A_OnIsCombo()
     {
         boss.P_SetIsCombo(true);

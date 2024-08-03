@@ -10,12 +10,18 @@ public class ChopTrigger : MonoBehaviour
     {
         if (other.tag == "Player")
         {
+            Boss scBoss = GetComponentInParent<Boss>(); //부모 오브젝트에서 Boss 스크립트 가져오기
             PlayerMove scMove = other.GetComponent<PlayerMove>();
+            PlayerStats scStats = other.GetComponent<PlayerStats>();
             PlayerAnimation scAnimation = other.GetComponent<PlayerAnimation>();
-            //scMove.P_SetBounce(bounceForce); //플레이어 튕기기
-            scAnimation.PA_PlayKnockdownAnimation(); //녹다운 애니메이션 강제 실행
+            
             scMove.P_SetGroggy(); //플레이어를 그로기 상태로 만들기
-            scMove.P_CompulsionOffBattle(); //플레이어 전투 모션 해제
+            scAnimation.PA_PlayKnockdownAnimation(); //녹다운 애니메이션 강제 실행
+            (float, float, float) bossStats = scBoss.P_GetStats();
+            scStats.P_Hit(bossStats.Item1, bossStats.Item2, bossStats.Item3); //(공격력, 관통력, 관통률) 데이터
+
+            //scMove.P_CompulsionOffBattle(); //플레이어 전투 모션 해제
+            //scMove.P_SetBounce(bounceForce); //플레이어 튕기기
         }
     }
 }

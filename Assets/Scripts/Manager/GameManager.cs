@@ -5,15 +5,25 @@ using UnityEngine.UI;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
+    public PlayerAttack PlayerAttack { get { return playerAttack; } }
+
+    [SerializeField] private bool isTest; //테스트를 위해 메인메뉴 입력키 막기
 
     [SerializeField] private InventoryManager inventoryManager;
 
+    [Header("UI오브젝트")]
+    [SerializeField] private GameObject inventory; //인벤토리 오브젝트
+    [SerializeField] private GameObject mainMenu; //메인메뉴
+    
+    [SerializeField] private Button inventoryExitButton; //인벤토리 나가기 버튼
+    [SerializeField] private Button continueButton; //이어하기 버튼
+    [SerializeField] private Button retryButton; //다시하기 버튼
+    [SerializeField] private Button gameExitButton; //게임 나가기 버튼
     [SerializeField] private PlayerMove playerMove; //플레이어 움직임 제어
     [SerializeField] private PlayerAttack playerAttack; //플레이어 공격 제어
-    public PlayerAttack PlayerAttack { get { return playerAttack; } }
-    [SerializeField] private GameObject inventory; //인벤토리 오브젝트
-    [SerializeField] private Button inventoryExitButton; //인벤토리 나가기 버튼
-    [SerializeField,Tooltip("보일땐 True, 안보일 땐 False")] private bool isCursor; //커서 사용 유무
+    [SerializeField, Tooltip("보일땐 True, 안보일 땐 False")] private bool isCursor; //커서 사용 유무
+    [SerializeField] private bool isInventory; //인벤토리 활성화 유무
+    [SerializeField] private bool isMainMenu; //메인 메뉴 활성화 유무
     [SerializeField] private bool isPause; //게임 정지 유무
 
     private void Awake()
@@ -34,12 +44,14 @@ public class GameManager : MonoBehaviour
         inventoryManager = InventoryManager.Instance;
         Cursor.lockState = CursorLockMode.Locked; //게임 시작 시 마우스 커서 잠금
         inventory.SetActive(false);
+        mainMenu.SetActive(false);
     }
 
     private void Update()
     {
         PauseGame();
         SetCursor();
+        InputMainMenu();
         InputInventory();
     }
 
@@ -105,6 +117,7 @@ public class GameManager : MonoBehaviour
             inventory.SetActive(!inventory.activeSelf); //인벤토리 상태에 따라 결정
             isCursor = inventory.activeSelf; //인벤토리가 보일 때 마우스 커서 온
             isPause = inventory.activeSelf;
+            isInventory = inventory.activeSelf;
 
             if (!inventory.activeSelf) //인벤토리 끌 때
             {
@@ -114,11 +127,13 @@ public class GameManager : MonoBehaviour
         }
 
         //인벤토리가 켜져있는 상태에서 Esc버튼을 누를 경우 끄기(나중에 UI 설계할 때 수정 필수)
-        if (Input.GetKeyDown(KeyCode.Escape) && inventory.activeSelf)
+        if (Input.GetKeyDown(KeyCode.Escape) && isInventory)
         {
             inventory.SetActive(false);
+            isInventory = false;
             isCursor = false; 
             isPause = false;
+            return; //혹여 인벤토리 꺼진 후 바로 메인 메뉴 오픈 판정이 될 수 있기 때문에 예외 처리
         }
 
         inventoryExitButton.onClick.RemoveAllListeners(); //람다식에 대해 더 알아보기
@@ -129,6 +144,25 @@ public class GameManager : MonoBehaviour
         });
     }
 
+    /// <summary>
+    /// 메인 메뉴 조작
+    /// </summary>
+    private void InputMainMenu()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape) && !isInventory && !isTest) //인벤토리가 켜져있을 경우 인벤토리 먼저 조작
+        {
+            mainMenu.SetActive(!mainMenu.activeSelf);
+            isMainMenu = mainMenu.activeSelf;
+            isCursor = mainMenu.activeSelf;
+            isPause = mainMenu.activeSelf;
+        }
+
+        continueButton.onClick.AddListener(() =>
+        {
+            B_ContinueButton();
+        });
+    }
+
     private void B_ExitInventory()
     {
         inventory.SetActive(false);
@@ -136,12 +170,21 @@ public class GameManager : MonoBehaviour
         isPause = false;
     }
 
-    private void Menu()
+    private void B_ContinueButton()
     {
-        if (Input.GetKeyDown(KeyCode.Escape)) 
-        {
-            
-        }
+        mainMenu.SetActive(false);
+        isCursor = false;
+        isPause = false;
+    }
+
+    private void B_RetryButton()
+    {
+        Debug.Log("다시 하기");
+    }
+
+    private void B_GameExitButton()
+    {
+        Debug.Log("게임 종료");
     }
 }
 #region 게임 빌드 화면 비율 셋팅 예시
